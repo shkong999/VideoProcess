@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace VideoProcess.Model
@@ -23,7 +24,6 @@ namespace VideoProcess.Model
                 Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp",
                 InitialDirectory = @"C:\"
             };
-            // 초기 디렉토리 설정
 
             if (dialog.ShowDialog() == true)
             {
@@ -49,7 +49,7 @@ namespace VideoProcess.Model
             {
                 filePath = saveFileDialog.FileName;
             }
-            
+
             if (filePath != string.Empty)
             {
                 encoder.Frames.Add(BitmapFrame.Create(bitmapImage));

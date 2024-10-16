@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Windows.Controls;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,29 +11,44 @@ using System.Windows.Media;
 using Microsoft.Win32;
 using VideoProcess.Model;
 using VideoProcess.Tools;
+using System.Windows.Media.Imaging;
+using System.Drawing;
+using SkiaSharp;
 
 namespace VideoProcess.ViewModel
 {
-    class VideoProcessViewModel : INotifyPropertyChanged
+    public class VideoProcessViewModel : OnPropertyChange
     {
-        public event PropertyChangedEventHandler PropertyChanged;
+        public Picture picture;
+        public Transformation transformation;
+        public PictureProcess pictureProcess;
 
-        private void OnPropertyChanged(string propName)
+        public VideoProcessViewModel()
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+            picture = new Picture();
+            transformation = new Transformation();
+            pictureProcess = new PictureProcess();
         }
 
-        public Picture picture = new Picture();
-        public Transformation transformation = new Transformation();
         private ImageSource loadPicture;
-
         public ImageSource LoadPicture
         {
             get => loadPicture;
             set
             {
                 loadPicture = value;
-                OnPropertyChanged(nameof(loadPicture));
+                OnPropertyChanged(nameof(LoadPicture));
+            }
+        }
+
+        private ImageSource processedPicture;
+        public ImageSource ProcessedPicture
+        {
+            get => processedPicture;
+            set
+            {
+                processedPicture = value;
+                OnPropertyChanged(nameof(ProcessedPicture));
             }
         }
 
@@ -41,7 +57,7 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
-                loadPicture = transformation.TransformImg(picture.PictureOpen());
+                loadPicture = transformation.StringToImgSource(picture.PictureOpen());
                 LoadPicture = loadPicture;
             });
         }
@@ -50,8 +66,46 @@ namespace VideoProcess.ViewModel
         public ICommand PictureSaveCommand
         {
             get => new RelayCommand(() =>
-            { 
-                picture.PictureSave(transformation.TransformBmp(loadPicture));
+            {
+                BitmapImage bmpimg = loadPicture as BitmapImage;
+                picture.PictureSave(bmpimg);
+            });
+        }
+
+        public ICommand PictureEnlarge
+        {
+            get => new RelayCommand(() =>
+            {
+                //picture.PictureSave(loadPicture as BitmapImage);
+            });
+        }
+
+        /*public void OnMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            Image img = sender as Image;
+
+            // 위로 올렸을 때
+            if (e.Delta > 0)
+            {
+
+            }
+            // 아래로 내렸을 때
+            else
+            {
+
+            }
+        }*/
+
+        // 이진화
+        public ICommand Binization
+        {
+            get => new RelayCommand(() =>
+            {
+                if(loadPicture == null)
+                {
+                    return;
+                }
+
             });
         }
     }
