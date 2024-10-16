@@ -24,8 +24,8 @@ namespace VideoProcess.ViewModel
 
         public Picture picture = new Picture();
         public Transformation transformation = new Transformation();
-
         private ImageSource loadPicture;
+
         public ImageSource LoadPicture
         {
             get => loadPicture;
@@ -36,12 +36,22 @@ namespace VideoProcess.ViewModel
             }
         }
 
+        // 이미지1 열기
         public ICommand PictureOpenCommand
         {
             get => new RelayCommand(() =>
             {
-                loadPicture = transformation.PictureTransformation(picture.PictureOpen());
+                loadPicture = transformation.TransformImg(picture.PictureOpen());
                 LoadPicture = loadPicture;
+            });
+        }
+
+        // 이미지2 저장
+        public ICommand PictureSaveCommand
+        {
+            get => new RelayCommand(() =>
+            { 
+                picture.PictureSave(transformation.TransformBmp(loadPicture));
             });
         }
     }

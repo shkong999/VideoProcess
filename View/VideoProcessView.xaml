@@ -34,7 +34,13 @@
                 VerticalAlignment="Top" 
                 Width="108"
                 Command="{Binding PictureOpenCommand}"/>
-        <Button Content="이미지2 저장" HorizontalAlignment="Left" Height="30" Margin="1082,57,0,0" VerticalAlignment="Top" Width="108"/>
+        <Button Content="이미지2 저장" 
+                HorizontalAlignment="Left" 
+                Height="30" 
+                Margin="1082,57,0,0" 
+                VerticalAlignment="Top" 
+                Width="108"
+                Command="{Binding PictureSaveCommand}"/>
         <Button Content="팽창" HorizontalAlignment="Left" Height="30" Margin="1082,139,0,0" VerticalAlignment="Top" Width="108"/>
         <Button Content="수축" HorizontalAlignment="Left" Height="30" Margin="1082,175,0,0" VerticalAlignment="Top" Width="108"/>
         <Button Content="히스토그램 병렬화" HorizontalAlignment="Left" Height="30" Margin="1082,225,0,0" VerticalAlignment="Top" Width="108"/>
