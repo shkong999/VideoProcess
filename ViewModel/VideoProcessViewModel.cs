@@ -13,7 +13,6 @@ using VideoProcess.Model;
 using VideoProcess.Tools;
 using System.Windows.Media.Imaging;
 using System.Drawing;
-using SkiaSharp;
 
 namespace VideoProcess.ViewModel
 {
@@ -67,8 +66,7 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
-                BitmapImage bmpimg = loadPicture as BitmapImage;
-                picture.PictureSave(bmpimg);
+                picture.PictureSave(transformation.ImgSourceToBitmapImg(processedPicture));
             });
         }
 
@@ -101,11 +99,16 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
-                if(loadPicture == null)
+                if(loadPicture != null)
                 {
-                    return;
+                    Bitmap bitmap = transformation.ImgSourceToBitmap(loadPicture);
+                    if(bitmap != null)
+                    {
+                        bitmap = pictureProcess.Binization(bitmap);
+                        processedPicture = transformation.BitmapToImgSource(bitmap);
+                    }
+                    ProcessedPicture = processedPicture;
                 }
-
             });
         }
     }
