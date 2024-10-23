@@ -9,24 +9,25 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.Win32;
-using VideoProcess.Model;
 using VideoProcess.Tools;
 using System.Windows.Media.Imaging;
 using System.Drawing;
+using VideoProcess.Model;
+using System.Drawing.Imaging;
 
 namespace VideoProcess.ViewModel
 {
     public class VideoProcessViewModel : OnPropertyChange
     {
-        public Picture picture;
-        public Transformation transformation;
-        public PictureProcess pictureProcess;
+        public ImageTool imageTool;
+        public Model.Converter converter;
+        public ImageProcess imageProcess;
 
         public VideoProcessViewModel()
         {
-            picture = new Picture();
-            transformation = new Transformation();
-            pictureProcess = new PictureProcess();
+            imageTool = new ImageTool();
+            converter = new Converter();
+            imageProcess = new ImageProcess();
         }
 
         private ImageSource loadPicture;
@@ -56,8 +57,12 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
-                loadPicture = transformation.StringToImgSource(picture.PictureOpen());
-                LoadPicture = loadPicture;
+                ImageSource openImage = converter.StringToImgSource(imageTool.Open());
+                if(openImage != null)
+                {
+                    loadPicture = openImage;
+                    LoadPicture = loadPicture;
+                }
             });
         }
 
@@ -66,15 +71,13 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
-                picture.PictureSave(transformation.ImgSourceToBitmapImg(processedPicture));
-            });
-        }
+                BitmapImage bitmap = loadPicture as BitmapImage;
+                imageTool.Save(bitmap);
 
-        public ICommand PictureEnlarge
-        {
-            get => new RelayCommand(() =>
-            {
-                //picture.PictureSave(loadPicture as BitmapImage);
+                /*if(processedPicture != null)
+                {
+                    picture.PictureSave(transformation.ImgSourceToBitmapImg(processedPicture));
+                }*/
             });
         }
 
@@ -99,15 +102,28 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
-                if(loadPicture != null)
+                if(LoadPicture != null)
                 {
-                    Bitmap bitmap = transformation.ImgSourceToBitmap(loadPicture);
-                    if(bitmap != null)
+                    /* unsafe
+                     {
+                         byte* array = converter.ImgSourceToBytePointer(loadPicture);
+                         Bitmap bitmap = converter.ImgSourceToBitmap(loadPicture);
+                         imageProcess.Binization(bitmap);
+                     }*/
+                    
+                    Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
+                    unsafe
                     {
-                        bitmap = pictureProcess.Binization(bitmap);
-                        processedPicture = transformation.BitmapToImgSource(bitmap);
+                        byte* p = converter.ImgSourceToBytePointer(bitmap);
+                        imageProcess.Binization(p, bitmap);
                     }
+                    processedPicture = converter.BitmapToImgSource(bitmap);
                     ProcessedPicture = processedPicture;
+
+                    /*Bitmap binaizationbitmap = converter.ImgSourceToBitmap(loadPicture);
+                    processedPicture = converter.BitmapToImgSource(imageProcess.Binization(binaizationbitmap));
+
+                    ProcessedPicture = processedPicture;*/
                 }
             });
         }

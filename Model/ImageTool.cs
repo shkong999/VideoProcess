@@ -13,10 +13,10 @@ using System.Windows.Media.Imaging;
 
 namespace VideoProcess.Model
 {
-    public class Picture
+    public class ImageTool
     {
         // 사진 열기
-        public String PictureOpen()
+        public String Open()
         {
             string PicturePath = string.Empty;
 
@@ -35,7 +35,7 @@ namespace VideoProcess.Model
         }
         
         // 사진 저장
-        public void PictureSave(BitmapImage bitmapImage)
+        public void Save(BitmapImage bitmapImage)
         {
             var encoder = new BmpBitmapEncoder();
             string filePath = string.Empty;

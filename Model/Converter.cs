@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -12,7 +13,7 @@ using System.Windows.Media.Imaging;
 
 namespace VideoProcess.Model
 {
-    public class Transformation
+    public class Converter
     {
         // string > ImageSource
         public ImageSource StringToImgSource(string str)
@@ -83,6 +84,24 @@ namespace VideoProcess.Model
             bitmapImage.Freeze();
 
             return bitmapImage;
+        }
+
+        public unsafe byte* ImgSourceToBytePointer(Bitmap bitmap)
+        {
+            // BitmapData 객체에 비트맵 데이터를 잠금
+            BitmapData bitmapData = bitmap.LockBits(
+                new Rectangle(0, 0, bitmap.Width, bitmap.Height),
+                ImageLockMode.ReadWrite,
+                bitmap.PixelFormat);
+            byte* p;
+            // 픽셀 데이터에 접근하기 위한 포인터 사용
+            unsafe
+            {
+                p = (byte*)bitmapData.Scan0; // 비트맵의 첫 번째 픽셀 주소
+            }
+            bitmap.UnlockBits(bitmapData);
+
+            return p;
         }
     }
 }
