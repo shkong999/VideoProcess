@@ -71,31 +71,35 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
-                BitmapImage bitmap = loadPicture as BitmapImage;
-                imageTool.Save(bitmap);
+                /*BitmapImage bitmap = loadPicture as BitmapImage;
+                imageTool.Save(bitmap);*/
 
-                /*if(processedPicture != null)
+                if (processedPicture != null)
                 {
-                    picture.PictureSave(transformation.ImgSourceToBitmapImg(processedPicture));
-                }*/
+                    imageTool.Save(converter.ImgSourceToBitmapImg(processedPicture));
+                }
             });
         }
 
-        /*public void OnMouseWheel(object sender, MouseWheelEventArgs e)
+        public void OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            Image img = sender as Image;
+            var Image = sender as System.Windows.Controls.Image;
+            double zoom = 1.0;
 
             // 위로 올렸을 때
             if (e.Delta > 0)
             {
-
+                zoom *= 2;
             }
             // 아래로 내렸을 때
             else
             {
-
+                zoom /= 2;
             }
-        }*/
+
+            Image.Width = Image.Width * zoom;
+            Image.Height = Image.Height * zoom;
+        }
 
         // 이진화
         public ICommand Binization
@@ -104,26 +108,14 @@ namespace VideoProcess.ViewModel
             {
                 if(LoadPicture != null)
                 {
-                    /* unsafe
-                     {
-                         byte* array = converter.ImgSourceToBytePointer(loadPicture);
-                         Bitmap bitmap = converter.ImgSourceToBitmap(loadPicture);
-                         imageProcess.Binization(bitmap);
-                     }*/
-                    
-                    Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
                     unsafe
                     {
+                        Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
                         byte* p = converter.ImgSourceToBytePointer(bitmap);
-                        imageProcess.Binization(p, bitmap);
+                        Bitmap processedBitmap = imageProcess.Binization(p, bitmap);
+                        processedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
-                    processedPicture = converter.BitmapToImgSource(bitmap);
                     ProcessedPicture = processedPicture;
-
-                    /*Bitmap binaizationbitmap = converter.ImgSourceToBitmap(loadPicture);
-                    processedPicture = converter.BitmapToImgSource(imageProcess.Binization(binaizationbitmap));
-
-                    ProcessedPicture = processedPicture;*/
                 }
             });
         }

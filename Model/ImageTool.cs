@@ -64,10 +64,6 @@ namespace VideoProcess.Model
                     MessageBox.Show("완료되었습니다.");
                 }
             }
-            else
-            {
-                MessageBox.Show("파일명을 입력해주세요.");
-            }
         }
     }
 }
