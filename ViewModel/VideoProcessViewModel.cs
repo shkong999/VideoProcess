@@ -52,6 +52,26 @@ namespace VideoProcess.ViewModel
             }
         }
 
+        public void OnMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            var Image = sender as System.Windows.Controls.Image;
+            double zoom = 1.0;
+
+            // 위로 올렸을 때
+            if (e.Delta > 0)
+            {
+                zoom *= 2;
+            }
+            // 아래로 내렸을 때
+            else
+            {
+                zoom /= 2;
+            }
+
+            Image.Width = Image.Width * zoom;
+            Image.Height = Image.Height * zoom;
+        }
+
         // 이미지1 열기
         public ICommand PictureOpenCommand
         {
@@ -74,31 +94,43 @@ namespace VideoProcess.ViewModel
                 /*BitmapImage bitmap = loadPicture as BitmapImage;
                 imageTool.Save(bitmap);*/
 
-                if (processedPicture != null)
+                if (ProcessedPicture != null)
                 {
-                    imageTool.Save(converter.ImgSourceToBitmapImg(processedPicture));
+                    imageTool.Save(converter.ImgSourceToBitmapImg(ProcessedPicture));
                 }
             });
         }
 
-        public void OnMouseWheel(object sender, MouseWheelEventArgs e)
+        // 팽창
+        public ICommand Expansion
         {
-            var Image = sender as System.Windows.Controls.Image;
-            double zoom = 1.0;
-
-            // 위로 올렸을 때
-            if (e.Delta > 0)
+            get => new RelayCommand(() =>
             {
-                zoom *= 2;
-            }
-            // 아래로 내렸을 때
-            else
-            {
-                zoom /= 2;
-            }
+                if (LoadPicture != null)
+                {
+                    // 이진화 체크 코드 추가
+                    
+                    
+                    unsafe
+                    {
+                        Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
+                        byte* p = converter.ImgSourceToBytePointer(bitmap);
+                        // 이진화 추가
+                        bool check = imageProcess.CheckBinary(p, bitmap.Width, bitmap.Height, 1);
+                        if (check == false)
+                        {
+                            bitmap = imageProcess.Binarization(p, bitmap);
+                            p = converter.ImgSourceToBytePointer(bitmap);
 
-            Image.Width = Image.Width * zoom;
-            Image.Height = Image.Height * zoom;
+                            imageProcess.Expansion(p, bitmap);
+                        }
+
+                        Bitmap processedBitmap = imageProcess.Expansion(p, bitmap);
+                        processedPicture = converter.BitmapToImgSource(processedBitmap);
+                    }
+                    ProcessedPicture = processedPicture;
+                }
+            });
         }
 
         // 이진화
@@ -112,7 +144,7 @@ namespace VideoProcess.ViewModel
                     {
                         Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
                         byte* p = converter.ImgSourceToBytePointer(bitmap);
-                        Bitmap processedBitmap = imageProcess.Binization(p, bitmap);
+                        Bitmap processedBitmap = imageProcess.Binarization(p, bitmap);
                         processedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
                     ProcessedPicture = processedPicture;

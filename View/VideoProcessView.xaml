@@ -57,7 +57,13 @@
                 VerticalAlignment="Top" 
                 Width="108"
                 Command="{Binding PictureSaveCommand}"/>
-        <Button Content="팽창" HorizontalAlignment="Left" Height="30" Margin="1082,169,0,0" VerticalAlignment="Top" Width="108"/>
+        <Button Content="팽창" 
+                HorizontalAlignment="Left" 
+                Height="30" 
+                Margin="1082,169,0,0" 
+                VerticalAlignment="Top" 
+                Width="108"
+                Command="{Binding Expansion}"/>
         <Button Content="수축" HorizontalAlignment="Left" Height="30" Margin="1082,205,0,0" VerticalAlignment="Top" Width="108"/>
         <Button Content="히스토그램 병렬화" HorizontalAlignment="Left" Height="30" Margin="1082,266,0,0" VerticalAlignment="Top" Width="108"/>
         <Button Content="오츠 이진화" 
