@@ -37,7 +37,7 @@ namespace VideoProcess.Model
         }
 
         /* 팽창
-         *  이진 이미지로 변환 > 구조적 요소 정의 > 팽창 적용
+         *  구조적 요소(커널) 정의 > 팽창 적용
          */
         public unsafe Bitmap Expansion(byte* pBitmap, Bitmap bitmap)
         {
@@ -45,7 +45,7 @@ namespace VideoProcess.Model
             int height = bitmap.Height;
             int bytesPerPixel = 0;
 
-            if (bitmap.PixelFormat == PixelFormat.Format32bppRgb)
+            if (bitmap.PixelFormat == PixelFormat.Format32bppRgb || bitmap.PixelFormat == PixelFormat.Format32bppArgb)
             {
                 bytesPerPixel = 4;
             }
@@ -106,12 +106,205 @@ namespace VideoProcess.Model
                     }
                     int outputIndex = y * width * bytesPerPixel + x * bytesPerPixel;
                     pNewBitmap[outputIndex] = maxValue;
+                    if(bytesPerPixel == 4)
+                    {
+                        pNewBitmap[outputIndex + 1] = maxValue;
+                        pNewBitmap[outputIndex + 2] = maxValue;
+                        pNewBitmap[outputIndex + 3] = 255;
+                    }
                 }
             }
             newBitmap.UnlockBits(bmpData);
 
             return newBitmap;
         }
+
+        /* 수축
+         * 
+         */
+        public unsafe Bitmap Shrinkage(byte* pBitmap, Bitmap bitmap)
+        {
+            int width = bitmap.Width;
+            int height = bitmap.Height;
+            int bytesPerPixel = 0;
+
+            if (bitmap.PixelFormat == PixelFormat.Format32bppRgb || bitmap.PixelFormat == PixelFormat.Format32bppArgb)
+            {
+                bytesPerPixel = 4;
+            }
+            else if (bitmap.PixelFormat == PixelFormat.Format8bppIndexed)
+            {
+                bytesPerPixel = 1;
+            }
+
+            // 새로운 비트맵 생성
+            Bitmap newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            if (bytesPerPixel == 4)
+            {
+                newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            }
+            else if (bytesPerPixel == 1)
+            {
+                newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+            }
+
+            BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);
+            byte* pNewBitmap = (byte*)bmpData.Scan0.ToPointer();
+
+            // 구조 요소 (3x3 커널)
+            int[,] kernel = new int[,]
+            {
+            { 1, 1, 1 },
+            { 1, 1, 1 },
+            { 1, 1, 1 }
+            };
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    // 최소값 저장
+                    byte minValue = 255;
+
+                    // kernel size > 3x3
+                    for (int kernelX = -1; kernelX <= 1; kernelX++)
+                    {
+                        for (int kernelY = -1; kernelY <= 1; kernelY++)
+                        {
+                            int newX = x + kernelX;
+                            int newY = y + kernelY;
+
+                            // 경계 체크
+                            if (newX >= 0 && newX < width && newY >= 0 && newY < height)
+                            {
+                                int pixelIndex = newY * width * bytesPerPixel + newX * bytesPerPixel;
+                                byte pixelValue = pBitmap[pixelIndex];
+                                if (pixelValue < minValue)
+                                {
+                                    minValue = pixelValue;
+                                }
+                            }
+                        }
+                    }
+                    int outputIndex = y * width * bytesPerPixel + x * bytesPerPixel;
+                    pNewBitmap[outputIndex] = minValue;
+                    if (bytesPerPixel == 4)
+                    {
+                        pNewBitmap[outputIndex + 1] = minValue;
+                        pNewBitmap[outputIndex + 2] = minValue;
+                        pNewBitmap[outputIndex + 3] = 255;
+                    }
+                }
+            }
+            newBitmap.UnlockBits(bmpData);
+
+            return newBitmap;
+        }
+
+        /* 히스토그램 평활화
+         *  이미지의 히스토그램 생성 > 누적 분포 히스토그램 계산 > 누적 값을 정규화 > 이미지 생성
+         * 
+         */
+        public unsafe Bitmap Smoothing(byte* pBitmap, Bitmap bitmap)
+        {
+            int width = bitmap.Width;
+            int height = bitmap.Height;
+            double[] histogram = new double[256];
+            double[] cdfHistogram = new double[256];
+            int[] equalHistogram = new int[256];
+
+            int bytesPerPixel = 0;
+            if (bitmap.PixelFormat == PixelFormat.Format32bppRgb)
+            {
+                bytesPerPixel = 4;
+            }
+            else if (bitmap.PixelFormat == PixelFormat.Format8bppIndexed)
+            {
+                bytesPerPixel = 1;
+            }
+
+            // 새로운 비트맵 생성
+            Bitmap newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            if (bytesPerPixel == 4)
+            {
+                newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            }
+            else if (bytesPerPixel == 1)
+            {
+                newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+            }
+
+            // 비트맵 데이터를 잠금
+            BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);
+            byte* pNewBitmap = (byte*)bmpData.Scan0.ToPointer();
+
+            // 히스토그램 생성
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    byte* pixel = pBitmap + (y * width + x) * bytesPerPixel;
+                    byte histValue = 0;
+
+                    if (bytesPerPixel == 4)
+                    {
+                        // 평균값 계산
+                        histValue = (byte)((pixel[2] + pixel[1] + pixel[0]) / 3);
+                    }
+                    else if (bytesPerPixel == 1)
+                    {
+                        histValue = (byte)pixel[0];
+                    }
+
+                    histogram[histValue]++;
+                }
+            }
+
+            int totalPixel = bitmap.Width * bitmap.Height;
+            for (int i = 0; i < histogram.Length; i++)
+            {
+                histogram[i] = histogram[i] / totalPixel;
+            }
+
+            // 누적 분포 히스토그램 계산
+            cdfHistogram[0] = histogram[0];
+            for (int i = 1; i < histogram.Length; i++)
+            {
+                cdfHistogram[i] = (cdfHistogram[i - 1] + histogram[i]);
+            }
+
+            // 히스토그램 정규화
+            for (int i = 0; i < cdfHistogram.Length; i++)
+            {
+                equalHistogram[i] = (int)Math.Round(cdfHistogram[i] * 255);
+            }
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    byte* pixel = pBitmap + (y * width + x) * bytesPerPixel;
+                    byte histValue = 0;
+
+                    if (bytesPerPixel == 4)
+                    {
+                        histValue = (byte)((pixel[2] + pixel[1] + pixel[0]) / 3);
+                    }
+                    else if (bytesPerPixel == 1)
+                    {
+                        histValue = pixel[0];
+                    }
+
+                    pNewBitmap[y * newBitmap.Width + x] = (byte)equalHistogram[histValue];
+                }
+            }
+            // 비트맵 잠금 해제
+            newBitmap.UnlockBits(bmpData);
+            return newBitmap;
+        }
+
 
         /* 이진화
          *  이미지를 그레이 스케일로 변환 > 히스토그램 > 임계값 계산 > 그레이 스케일한 이미지로 이진화
@@ -249,8 +442,6 @@ namespace VideoProcess.Model
                     }
                 }
             }
-
-            /*bool check = CheckBinary(pNewBitmap, newBitmap.Width, newBitmap.Height, bytesPerPixel);*/
 
             // 비트맵 잠금 해제
             newBitmap.UnlockBits(bmpData);
