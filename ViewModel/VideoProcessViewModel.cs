@@ -55,6 +55,7 @@ namespace VideoProcess.ViewModel
             }
         }
 
+        // 이미지 확대 / 축소
         public void OnMouseWheel(object sender, MouseWheelEventArgs e)
         {
             var image = sender as Image;
@@ -71,29 +72,7 @@ namespace VideoProcess.ViewModel
             var transform = new ScaleTransform(scale, scale);
             image.RenderTransform = transform;
             image.RenderTransformOrigin = new System.Windows.Point(0.5, 0.5);
-
-            //if (image.IsVisible)
-            //{
-            //    var scrollViewer = FindParent<ScrollViewer>(image);
-            //    if (scrollViewer != null)
-            //    {
-            //        double newWidth = image.ActualWidth * scale;
-            //        double newHeight = image.ActualHeight * scale;
-
-            //        scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset + (e.GetPosition(image).X - newWidth / 2) * (scale - 1));
-            //        scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset + (e.GetPosition(image).Y - newHeight / 2) * (scale - 1));
-            //    }
-            //}
         }
-
-        /*private T FindParent<T>(DependencyObject child) where T : DependencyObject
-        {
-            DependencyObject parentObject = VisualTreeHelper.GetParent(child);
-            if (parentObject == null) return null;
-
-            T parent = parentObject as T;
-            return parent ?? FindParent<T>(parentObject);
-        }*/
 
         // 이미지1 열기
         public ICommand PictureOpenCommand
@@ -211,6 +190,44 @@ namespace VideoProcess.ViewModel
                         Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
                         byte* p = converter.ImgSourceToBytePointer(bitmap);
                         Bitmap processedBitmap = imageProcess.Binarization(p, bitmap);
+                        processedPicture = converter.BitmapToImgSource(processedBitmap);
+                    }
+                    ProcessedPicture = processedPicture;
+                }
+            });
+        }
+
+        // 필터 가우스
+        public ICommand Gaussian
+        {
+            get => new RelayCommand(() =>
+            {
+                if (LoadPicture != null)
+                {
+                    unsafe
+                    {
+                        Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
+                        byte* p = converter.ImgSourceToBytePointer(bitmap);
+                        Bitmap processedBitmap = imageProcess.Gaussion(p, bitmap);
+                        processedPicture = converter.BitmapToImgSource(processedBitmap);
+                    }
+                    ProcessedPicture = processedPicture;
+                }
+            });
+        }
+
+        // 필터 라플라스
+        public ICommand Laplace
+        {
+            get => new RelayCommand(() =>
+            {
+                if(LoadPicture != null)
+                {
+                    unsafe
+                    {
+                        Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
+                        byte* p = converter.ImgSourceToBytePointer(bitmap);
+                        Bitmap processedBitmap = imageProcess.Laplace(p, bitmap);
                         processedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
                     ProcessedPicture = processedPicture;

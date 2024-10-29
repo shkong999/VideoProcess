@@ -43,13 +43,14 @@
                     <Image Source="{Binding ProcessedPicture}" 
                            Stretch="Uniform"
                            Width="520"
-                           Height="520"/>
-                    <b:Interaction.Triggers>
-                        <b:EventTrigger EventName="MouseWheel">
-                            <b:CallMethodAction MethodName="OnMouseWheel"
-                                                    TargetObject="{Binding}"/>
-                        </b:EventTrigger>
-                    </b:Interaction.Triggers>
+                           Height="520">
+                        <b:Interaction.Triggers>
+                            <b:EventTrigger EventName="MouseWheel">
+                                <b:CallMethodAction MethodName="OnMouseWheel"
+                                        TargetObject="{Binding}"/>
+                            </b:EventTrigger>
+                        </b:Interaction.Triggers>
+                    </Image>
                 </ScrollViewer>
             </Border>
         </Grid>
@@ -95,10 +96,27 @@
                 VerticalAlignment="Top" 
                 Width="108"
                 Command="{Binding Binization}"/>
-        <Button Content="필터 가우스" HorizontalAlignment="Left" Height="30" Margin="1082,394,0,0" VerticalAlignment="Top" Width="108"/>
-        <Button Content="필터 라플라스" HorizontalAlignment="Left" Height="30" Margin="1082,428,0,0" VerticalAlignment="Top" Width="108"/>
+        <Button Content="필터 가우스" 
+                HorizontalAlignment="Left" 
+                Height="30" 
+                Margin="1082,394,0,0" 
+                VerticalAlignment="Top" 
+                Width="108"
+                Command="{Binding Gaussian}"/>
+        <Button Content="필터 라플라스" 
+                HorizontalAlignment="Left" 
+                Height="30" 
+                Margin="1082,428,0,0" 
+                VerticalAlignment="Top" 
+                Width="108"
+                Command="{Binding Laplace}"/>
         <Button Content="필터 FFT" HorizontalAlignment="Left" Height="30" Margin="1082,464,0,0" VerticalAlignment="Top" Width="108"/>
-        <Button Content="템플릿 매칭" HorizontalAlignment="Left" Height="30" Margin="1082,500,0,-10" VerticalAlignment="Top" Width="108"/>
+        <Button Content="템플릿 매칭" 
+                HorizontalAlignment="Left" 
+                Height="30" 
+                Margin="1082,500,0,-10" 
+                VerticalAlignment="Top" 
+                Width="108"/>
         <TextBlock HorizontalAlignment="Left" 
                    Height="30" 
                    Margin="163,0,0,0" 
