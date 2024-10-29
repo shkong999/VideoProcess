@@ -8,10 +8,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Color = System.Drawing.Color;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
+using Point = System.Drawing.Point;
 
 namespace VideoProcess.Model
 {
@@ -535,7 +537,8 @@ namespace VideoProcess.Model
             double variance = varianceSum / totalPixel;
 
             // 표준편차 계산
-            double standardDeviation = Math.Sqrt(variance);
+
+            double standardDeviation = 2;//Math.Sqrt(variance);
 
             // 가우시안 커널 생성
             int kernelSize = 6 * (int)standardDeviation;
@@ -570,37 +573,37 @@ namespace VideoProcess.Model
             // 가우시안 커널 적용
             Parallel.For(0, height, y =>
             {
-                for (int x = 0; x < width; x++)
-                {
-                    double value = 0;
+                Parallel.For(0, width, x =>
+               {
+                   double value = 0;
 
-                    for (int kernelY = -radius; kernelY <= radius; kernelY++)
-                    {
-                        for (int kernelX = -radius; kernelX <= radius; kernelX++)
-                        {
-                            int newX = x + kernelX;
-                            int newY = y + kernelY;
+                   for (int kernelY = -radius; kernelY <= radius; kernelY++)
+                   {
+                       for (int kernelX = -radius; kernelX <= radius; kernelX++)
+                       {
+                           int newX = x + kernelX;
+                           int newY = y + kernelY;
 
-                            if (newX >= 0 && newX < width && newY >= 0 && newY < height)
-                            {
-                                int pixelIndex = newY * width * bytesPerPixel + newX * bytesPerPixel;
-                                byte pixelValue = pBitmap[pixelIndex];
+                           if (newX >= 0 && newX < width && newY >= 0 && newY < height)
+                           {
+                               int pixelIndex = newY * width * bytesPerPixel + newX * bytesPerPixel;
+                               byte pixelValue = pBitmap[pixelIndex];
 
-                                double kernelValue = kernel[kernelX + radius, kernelY + radius];
-                                value += kernelValue * pixelValue;
-                            }
-                        }
-                    }
-                    int outputIndex = y * width * bytesPerPixel + x * bytesPerPixel;
-                    pNewBitmap[outputIndex] = (byte)Math.Min(255, Math.Max(0, value));
+                               double kernelValue = kernel[kernelX + radius, kernelY + radius];
+                               value += kernelValue * pixelValue;
+                           }
+                       }
+                   }
+                   int outputIndex = y * width * bytesPerPixel + x * bytesPerPixel;
+                   pNewBitmap[outputIndex] = (byte)Math.Min(255, Math.Max(0, value));
 
-                    if (bytesPerPixel == 4)
-                    {
-                        pNewBitmap[outputIndex + 1] = (byte)Math.Min(255, Math.Max(0, value));
-                        pNewBitmap[outputIndex + 2] = (byte)Math.Min(255, Math.Max(0, value));
-                        pNewBitmap[outputIndex + 3] = 255;
-                    }
-                }
+                   if (bytesPerPixel == 4)
+                   {
+                       pNewBitmap[outputIndex + 1] = (byte)Math.Min(255, Math.Max(0, value));
+                       pNewBitmap[outputIndex + 2] = (byte)Math.Min(255, Math.Max(0, value));
+                       pNewBitmap[outputIndex + 3] = 255;
+                   }
+               });
             });
             
             // 비트맵 잠금 해제
@@ -626,7 +629,7 @@ namespace VideoProcess.Model
             }
 
             // 새로운 비트맵 생성
-            Bitmap newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            Bitmap newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
 
             if (bytesPerPixel == 4)
             {
@@ -685,6 +688,8 @@ namespace VideoProcess.Model
                             }
                         }
                     }
+                    value = Math.Min(255, Math.Max(0, value));
+
                     int outputIndex = y * width * bytesPerPixel + x * bytesPerPixel;
                     pNewBitmap[outputIndex] = (byte)Math.Min(255, Math.Max(0, value));
 
@@ -700,6 +705,48 @@ namespace VideoProcess.Model
             // 비트맵 잠금 해제
             newBitmap.UnlockBits(bmpData);
             return newBitmap;
+        }
+
+        // imageProcess.Matching(templateBitmap, tBitmap, originalBitmap, pBitmap)
+        public unsafe Point Matching(Bitmap templateBitmap, byte* tBitmap, Bitmap originalBitmap, byte* pBitmap)
+        {
+            int[,] kernel = new int[templateBitmap.Width, templateBitmap.Height];
+
+            float bestMatchValue = float.MinValue;
+            System.Drawing.Point bestMatchLocation = new System.Drawing.Point(-1, -1);
+
+            for (int y = 0; y < originalBitmap.Height - templateBitmap.Height; y++)
+            {
+                for(int x = 0; x < originalBitmap.Width - templateBitmap.Width; x++)
+                {
+                    float matchValue = 0.0f;
+
+                    for (int kernelY = 0; kernelY < templateBitmap.Height; kernelY++)
+                    {
+                        for (int kernelX = 0; kernelX < templateBitmap.Width; kernelX++)
+                        {
+                            // 1 = bytePerPixel
+                            int pixelIndex = y + kernelY * originalBitmap.Width * 1 + kernelX * 1;
+
+                            int originalIndex = ((y + kernelY) * originalBitmap.Width + (x + kernelX)) * 1;
+                            int templateIndex = (kernelY * templateBitmap.Width + kernelX) * 1;
+
+                            /*float difference */
+                            matchValue += Math.Abs(pBitmap[originalIndex] - tBitmap[templateIndex]);
+                        }
+
+                        matchValue /= (templateBitmap.Width * templateBitmap.Height);
+
+                        // 최고 유사도 찾기
+                        if (matchValue > bestMatchValue)
+                        {
+                            bestMatchValue = matchValue;
+                            bestMatchLocation = new System.Drawing.Point(x, y);
+                        }
+                    }
+                }
+            }
+            return bestMatchLocation;
         }
     }
 }

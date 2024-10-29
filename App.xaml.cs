@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
+using VideoProcess.View;
 
 namespace VideoProcess
 {
@@ -16,9 +17,6 @@ namespace VideoProcess
     {
         protected override void OnStartup(StartupEventArgs e)
         {
-            // 하드웨어 가속 비활성화
-            System.Windows.Media.RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
-
             base.OnStartup(e);
         }
     }

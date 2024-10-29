@@ -77,7 +77,11 @@
     <Compile Include="Model\ImageTool.cs" />
     <Compile Include="Tools\OnPropertyChange.cs" />
     <Compile Include="Tools\RelayCommand.cs" />
+    <Compile Include="ViewModel\PreviewViewModel.cs" />
     <Compile Include="ViewModel\VideoProcessViewModel.cs" />
+    <Compile Include="View\PreviewView.xaml.cs">
+      <DependentUpon>PreviewView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\VideoProcessView.xaml.cs">
       <DependentUpon>VideoProcessView.xaml</DependentUpon>
     </Compile>
@@ -85,6 +89,10 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="View\PreviewView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\VideoProcessView.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

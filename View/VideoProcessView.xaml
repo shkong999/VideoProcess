@@ -13,7 +13,7 @@
                 Height="520" 
                 VerticalAlignment="Center" 
                 Width="520"
-                Margin="0,30,0,-30"
+                Margin="5,30,0,-30"
                 Name="FirstImage">
             <Border BorderBrush="Black" BorderThickness="2" CornerRadius="5">
                 <ScrollViewer HorizontalScrollBarVisibility="Hidden"
@@ -116,7 +116,8 @@
                 Height="30" 
                 Margin="1082,500,0,-10" 
                 VerticalAlignment="Top" 
-                Width="108"/>
+                Width="108"
+                Command="{Binding Matching}"/>
         <TextBlock HorizontalAlignment="Left" 
                    Height="30" 
                    Margin="163,0,0,0" 

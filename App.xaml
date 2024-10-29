@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:VideoProcess"
              StartupUri="View/VideoProcessView.xaml">
     <Application.Resources>
-         
+        
     </Application.Resources>
 </Application>

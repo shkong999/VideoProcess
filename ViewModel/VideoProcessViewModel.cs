@@ -16,14 +16,17 @@ using VideoProcess.Model;
 using System.Drawing.Imaging;
 using Image = System.Windows.Controls.Image;
 using System.Windows.Forms;
+using VideoProcess.View;
 
 namespace VideoProcess.ViewModel
 {
     public class VideoProcessViewModel : OnPropertyChange
     {
         public ImageTool imageTool;
-        public Model.Converter converter;
+        public Converter converter;
         public ImageProcess imageProcess;
+        public PreviewViewModel PreviewViewModel;
+        public PreviewView previewView;
         private double scale = 1.0;
 
         public VideoProcessViewModel()
@@ -31,6 +34,9 @@ namespace VideoProcess.ViewModel
             imageTool = new ImageTool();
             converter = new Converter();
             imageProcess = new ImageProcess();
+            PreviewViewModel = new PreviewViewModel();
+            previewView = new PreviewView() { DataContext = PreviewViewModel };
+            previewView.Show();
         }
 
         private ImageSource loadPicture;
@@ -40,6 +46,7 @@ namespace VideoProcess.ViewModel
             set
             {
                 loadPicture = value;
+                PreviewViewModel.PreviewImage = value;
                 OnPropertyChanged(nameof(LoadPicture));
             }
         }
@@ -54,6 +61,12 @@ namespace VideoProcess.ViewModel
                 OnPropertyChanged(nameof(ProcessedPicture));
             }
         }
+
+        /*private Frame previewFrame = new Frame();
+        public Frame PreviewFrame
+        {
+            get => 
+        }*/
 
         // 이미지 확대 / 축소
         public void OnMouseWheel(object sender, MouseWheelEventArgs e)
@@ -231,6 +244,32 @@ namespace VideoProcess.ViewModel
                         processedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
                     ProcessedPicture = processedPicture;
+                }
+            });
+        }
+
+        // 템플릿매칭
+        public ICommand Matching
+        {
+            get => new RelayCommand(() =>
+            {
+                if (LoadPicture != null)
+                {
+                    ImageSource openImage = converter.StringToImgSource(imageTool.Open());
+                    processedPicture = openImage;
+
+                    unsafe
+                    {
+                        Bitmap templateBitmap = converter.ImgSourceToBitmap(processedPicture);
+                        byte* tBitmap = converter.ImgSourceToBytePointer(templateBitmap);
+
+                        Bitmap originalBitmap = converter.ImgSourceToBitmap(loadPicture);
+                        byte* pBitmap = converter.ImgSourceToBytePointer(originalBitmap);
+
+                        System.Drawing.Point bestPoint = imageProcess.Matching(templateBitmap, tBitmap, originalBitmap, pBitmap);
+
+                       //processedPicture = converter.BitmapToImgSource()
+                    }
                 }
             });
         }

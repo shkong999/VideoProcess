@@ -58,7 +58,6 @@ namespace VideoProcess.Model
         public ImageSource BitmapToImgSource(Bitmap bitmap)
         {
             BitmapSource bitmapSource;
-
             IntPtr hBitmap = bitmap.GetHbitmap();
             BitmapSizeOptions sizeOptions = BitmapSizeOptions.FromEmptyOptions();
             bitmapSource = System.Windows.Interop.Imaging.CreateBitmapSourceFromHBitmap(hBitmap, IntPtr.Zero, Int32Rect.Empty, sizeOptions);
