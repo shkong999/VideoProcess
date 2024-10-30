@@ -4,6 +4,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -537,7 +538,6 @@ namespace VideoProcess.Model
             double variance = varianceSum / totalPixel;
 
             // 표준편차 계산
-
             double standardDeviation = 2;//Math.Sqrt(variance);
 
             // 가우시안 커널 생성
@@ -707,42 +707,313 @@ namespace VideoProcess.Model
             return newBitmap;
         }
 
+        // FFT
+        public unsafe Bitmap Fft(byte* pBitmap, Bitmap bitmap)
+        {
+            Bitmap resultBitmap = ApplyFftFilter(bitmap, 0);
+            return resultBitmap;
+        }
+
+        public static Bitmap ApplyFftFilter(Bitmap bitmap, double cutoff)
+        {
+            int width = bitmap.Width;
+            int height = bitmap.Height;
+            Complex[,] frequencyDomain = new Complex[width, height];
+
+            // 비트맵 데이터 잠금
+            BitmapData bitmapData = bitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.ReadOnly, bitmap.PixelFormat);
+            unsafe
+            {
+                byte* ptr = (byte*)bitmapData.Scan0;
+
+                // 이미지를 Complex 배열로 변환
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        int pixelIndex = y * bitmapData.Stride + x * 1; // BGRA 포맷
+                        byte blue = ptr[pixelIndex];
+                        //byte green = ptr[pixelIndex + 1];
+                        //byte red = ptr[pixelIndex + 2];
+                        double intensity = blue;
+                        frequencyDomain[x, y] = new Complex(intensity, 0);
+                    }
+                }
+            }
+            bitmap.UnlockBits(bitmapData);
+
+            // FFT 및 저주파 필터링
+            for (int y = 0; y < height; y++)
+            {
+                frequencyDomain = FFT1D(frequencyDomain, y, width);
+            }
+            frequencyDomain = Transpose(frequencyDomain);
+            for (int x = 0; x < height; x++)
+            {
+                frequencyDomain = FFT1D(frequencyDomain, x, height);
+            }
+            ApplyLowPassFilter(frequencyDomain, cutoff);
+
+            // IFFT 수행
+            Complex[,] output = new Complex[width, height];
+            output = frequencyDomain;
+
+            for (int y = 0; y < height; y++)
+            {
+                output = IFFT1D(frequencyDomain, y, width);
+            }
+            output = Transpose(output);
+            for (int x = 0; x < width; x++)
+            {
+                output = IFFT1D(output, x, height);
+            }
+
+            // 결과를 Bitmap으로 변환
+            Bitmap resultBitmap = new Bitmap(width, height);
+            BitmapData resultData = resultBitmap.LockBits(new Rectangle(0, 0, width, height), ImageLockMode.WriteOnly, PixelFormat.Format8bppIndexed);
+            unsafe
+            {
+                byte* ptr = (byte*)resultData.Scan0;
+                for (int y = 0; y < height; y++)
+                {
+                    for (int x = 0; x < width; x++)
+                    {
+                        double intensity = output[x, y].Real /*/ (width * height)*/;
+
+                        // 클램핑 구현
+                        if (intensity < 0) intensity = 0;
+                        if (intensity > 255) intensity = 255;
+
+                        int pixelIndex = y * resultData.Stride + x * 1; // BGRA 포맷
+                        ptr[pixelIndex] = (byte)intensity;        // Blue
+                        /*ptr[pixelIndex + 1] = (byte)intensity;  // Green
+                        ptr[pixelIndex + 2] = (byte)intensity;  // Red
+                        ptr[pixelIndex + 3] = 255;               // Alpha*/
+                    }
+                }
+            }
+            resultBitmap.UnlockBits(resultData);
+            return resultBitmap;
+        }
+
+        private static Complex[,] FFT1D(Complex[,] data, int index, int length)
+        {
+            Complex[] row = new Complex[length];
+            for(int i = 0; i < length; i++)
+            {
+                if(row.GetLength(0) < data.GetLength(0))
+                {
+                    row[i] = data[i, index];
+                }
+                else if (row.GetLength(0) > data.GetLength(0))
+                {
+                    row[i] = data[index, i];
+                }    
+            }
+
+            var transformed = FFT(row);
+            for (int i = 0; i < length; i++)
+            {
+                if(data.GetLength(0) < transformed.GetLength(0))
+                {
+                    data[i, index] = transformed[i];
+                }
+                else if (data.GetLength(0) > transformed.GetLength(0))
+                {
+                    data[index, i] = transformed[i];
+                }
+                
+            }
+
+            /*for (int i = 0; i < length; i++)
+            {
+                row[i] = data[i, index];
+            }
+
+            var transformed = FFT(row);
+            for (int i = 0; i < length; i++)
+            {
+                data[i, index] = transformed[i];
+            }*/
+            return data;
+        }
+
+        private static Complex[] FFT(Complex[] x)
+        {
+            int N = x.Length;
+            if (N <= 1) return x;
+
+            var even = FFT(ExtractEven(x));
+            var odd = FFT(ExtractOdd(x));
+
+            var combined = new Complex[N];
+            for (int k = 0; k < N / 2; k++)
+            {
+                double angle = -2.0 * Math.PI * k / N;
+                var t = Complex.Exp(new Complex(0, angle)) * odd[k];
+                combined[k] = even[k] + t;
+                combined[k + N / 2] = even[k] - t;
+            }
+            return combined;
+        }
+
+        private static Complex[] ExtractEven(Complex[] x)
+        {
+            int N = x.Length / 2;
+            Complex[] even = new Complex[N];
+            for (int i = 0; i < N; i++)
+            {
+                even[i] = x[2 * i];
+            }
+            return even;
+        }
+
+        private static Complex[] ExtractOdd(Complex[] x)
+        {
+            int N = x.Length / 2;
+            Complex[] odd = new Complex[N];
+            for (int i = 0; i < N; i++)
+            {
+                odd[i] = x[2 * i + 1];
+            }
+            return odd;
+        }
+
+        private static Complex[,] IFFT1D(Complex[,] frequencyDomain, int index, int length)
+        {
+            Complex[] row = new Complex[length];
+
+            for(int i = 0; i < length; i++)
+            {
+                row[i] = frequencyDomain[index, i];
+                /*if (row.GetLength(0) < frequencyDomain.GetLength(0))
+                {
+                    row[i] = frequencyDomain[index, i];
+                }
+                else if (row.GetLength(0) > frequencyDomain.GetLength(0))
+                {
+                    row[i] = frequencyDomain[i, index];
+                }*/
+            }
+
+            var transformed = IFFT(row);
+
+            for (int i = 0; i < length; i++)
+            {
+                frequencyDomain[index, i] = transformed[i];
+                /*if (frequencyDomain.GetLength(0) < transformed.GetLength(0))
+                {
+                    frequencyDomain[index, i] = transformed[i];
+                }
+                else if (frequencyDomain.GetLength(0) > transformed.GetLength(0))
+                {
+                    frequencyDomain[i, index] = transformed[i];
+                }*/
+            }
+            /*for (int i = 0; i < length; i++)
+            {
+                row[i] = frequencyDomain[index,i];
+            }
+
+            var transformed = IFFT(row);
+            for (int i = 0; i < length; i++)
+            {
+                frequencyDomain[index, i] = transformed[i];
+            }*/
+
+            return frequencyDomain;
+        }
+
+        public static Complex[] IFFT(Complex[] x)
+        {
+            int N = x.Length;
+            if (N <= 1) return x;
+
+            var even = IFFT(ExtractEven(x));
+            var odd = IFFT(ExtractOdd(x));
+
+            var combined = new Complex[N];
+            for (int k = 0; k < N / 2; k++)
+            {
+                double angle = 2.0 * Math.PI * k / N; // 부호가 반대
+                var t = Complex.Exp(new Complex(0, angle)) * odd[k];
+                combined[k] = even[k] + t;
+                combined[k + N / 2] = even[k] - t;
+            }
+            return combined;
+        }
+
+        private static Complex[,] Transpose(Complex[,] matrix)
+        {
+            int width = matrix.GetLength(0);
+            int height = matrix.GetLength(1);
+            var transposed = new Complex[height, width];
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    transposed[y, x] = matrix[x, y];
+                }
+            }
+
+            return transposed;
+        }
+
+        public static void ApplyLowPassFilter(Complex[,] frequencyDomain, double cutoff)
+        {
+            int width = frequencyDomain.GetLength(0);
+            int height = frequencyDomain.GetLength(1);
+            int centerX = width / 2;
+            int centerY = height / 2;
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    double distance = Math.Sqrt(Math.Pow(x - centerX, 2) + Math.Pow(y - centerY, 2));
+                    if (distance < cutoff)
+                    {
+                        frequencyDomain[x, y] = Complex.Zero;
+                    }
+                }
+            }
+        }
+
+
         // imageProcess.Matching(templateBitmap, tBitmap, originalBitmap, pBitmap)
         public unsafe Point Matching(Bitmap templateBitmap, byte* tBitmap, Bitmap originalBitmap, byte* pBitmap)
         {
             int[,] kernel = new int[templateBitmap.Width, templateBitmap.Height];
 
-            float bestMatchValue = float.MinValue;
+            long bestMatchValue = long.MaxValue;
             System.Drawing.Point bestMatchLocation = new System.Drawing.Point(-1, -1);
 
             for (int y = 0; y < originalBitmap.Height - templateBitmap.Height; y++)
             {
                 for(int x = 0; x < originalBitmap.Width - templateBitmap.Width; x++)
                 {
-                    float matchValue = 0.0f;
+                    long matchValue = 0;
 
                     for (int kernelY = 0; kernelY < templateBitmap.Height; kernelY++)
                     {
                         for (int kernelX = 0; kernelX < templateBitmap.Width; kernelX++)
                         {
                             // 1 = bytePerPixel
-                            int pixelIndex = y + kernelY * originalBitmap.Width * 1 + kernelX * 1;
-
-                            int originalIndex = ((y + kernelY) * originalBitmap.Width + (x + kernelX)) * 1;
-                            int templateIndex = (kernelY * templateBitmap.Width + kernelX) * 1;
+                            int originalIndex = ((y + kernelY) * originalBitmap.Width + (x + kernelX)) * 3;
+                            int templateIndex = (kernelY * templateBitmap.Width + kernelX) * 3;
 
                             /*float difference */
                             matchValue += Math.Abs(pBitmap[originalIndex] - tBitmap[templateIndex]);
                         }
+                    }
+                    //matchValue /= (templateBitmap.Width * templateBitmap.Height);
 
-                        matchValue /= (templateBitmap.Width * templateBitmap.Height);
-
-                        // 최고 유사도 찾기
-                        if (matchValue > bestMatchValue)
-                        {
-                            bestMatchValue = matchValue;
-                            bestMatchLocation = new System.Drawing.Point(x, y);
-                        }
+                    // 최고 유사도 찾기
+                    if (matchValue < bestMatchValue)
+                    {
+                        bestMatchValue = matchValue;
+                        bestMatchLocation = new System.Drawing.Point(x, y);
                     }
                 }
             }

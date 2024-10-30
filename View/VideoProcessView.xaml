@@ -18,17 +18,22 @@
             <Border BorderBrush="Black" BorderThickness="2" CornerRadius="5">
                 <ScrollViewer HorizontalScrollBarVisibility="Hidden"
                               VerticalScrollBarVisibility="Hidden">
-                    <Image Source="{Binding LoadPicture}" 
-                               Stretch="Uniform"
-                               Width="520"
-                               Height="520">
+                    <Canvas Name="rectangle">
+                        <Rectangle Width="{Binding rectangleWidth}"
+                                   Height="{Binding rectangleHeight}">
+                        </Rectangle>
+                        <Image Source="{Binding LoadPicture}" 
+                                   Stretch="Uniform"
+                                   Width="520"
+                                   Height="520">
                             <b:Interaction.Triggers>
                                 <b:EventTrigger EventName="MouseWheel">
                                     <b:CallMethodAction MethodName="OnMouseWheel"
-                                        TargetObject="{Binding}"/>
+                                            TargetObject="{Binding}"/>
                                 </b:EventTrigger>
                             </b:Interaction.Triggers>
                         </Image>
+                    </Canvas>
                 </ScrollViewer>
             </Border>
         </Grid>
@@ -110,7 +115,13 @@
                 VerticalAlignment="Top" 
                 Width="108"
                 Command="{Binding Laplace}"/>
-        <Button Content="필터 FFT" HorizontalAlignment="Left" Height="30" Margin="1082,464,0,0" VerticalAlignment="Top" Width="108"/>
+        <Button Content="필터 FFT" 
+                HorizontalAlignment="Left" 
+                Height="30" 
+                Margin="1082,464,0,0" 
+                VerticalAlignment="Top" 
+                Width="108"
+                Command="{Binding Fft}"/>
         <Button Content="템플릿 매칭" 
                 HorizontalAlignment="Left" 
                 Height="30" 

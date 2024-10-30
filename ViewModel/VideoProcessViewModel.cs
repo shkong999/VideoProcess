@@ -73,6 +73,8 @@ namespace VideoProcess.ViewModel
         {
             var image = sender as Image;
 
+            var position = Mouse.GetPosition(image);
+
             if (e.Delta > 0)
             {
                 scale *= 1.1;
@@ -84,7 +86,7 @@ namespace VideoProcess.ViewModel
 
             var transform = new ScaleTransform(scale, scale);
             image.RenderTransform = transform;
-            image.RenderTransformOrigin = new System.Windows.Point(0.5, 0.5);
+            image.RenderTransformOrigin = new System.Windows.Point(position.X / image.ActualWidth, position.Y / image.ActualHeight);
         }
 
         // 이미지1 열기
@@ -248,6 +250,25 @@ namespace VideoProcess.ViewModel
             });
         }
 
+        // fft
+        public ICommand Fft
+        {
+            get => new RelayCommand(() =>
+            {
+                if (LoadPicture != null)
+                {
+                    unsafe
+                    {
+                        Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
+                        byte* p = converter.ImgSourceToBytePointer(bitmap);
+                        Bitmap processedBitmap = imageProcess.Fft(p, bitmap);
+                        processedPicture = converter.BitmapToImgSource(processedBitmap);
+                    }
+                    ProcessedPicture = processedPicture;
+                }
+            });
+        }
+
         // 템플릿매칭
         public ICommand Matching
         {
@@ -268,7 +289,32 @@ namespace VideoProcess.ViewModel
 
                         System.Drawing.Point bestPoint = imageProcess.Matching(templateBitmap, tBitmap, originalBitmap, pBitmap);
 
-                       //processedPicture = converter.BitmapToImgSource()
+                        Rectangle cropArea = new Rectangle(0, 0, (int)loadPicture.Width, (int)loadPicture.Height); // 크롭할 영역 정의
+                        Bitmap croppedBitmap = new Bitmap(cropArea.Width, cropArea.Height);
+
+                        int x = bestPoint.X;
+                        int y = bestPoint.Y;
+                        Rectangle rectangle = new Rectangle(x, y, templateBitmap.Width, templateBitmap.Height);
+
+                        using (Graphics g = Graphics.FromImage(originalBitmap))
+                        {
+                            using (System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Red, 3)) 
+                            {
+                                g.DrawRectangle(pen, rectangle);
+                            }
+                        }
+
+                        LoadPicture = converter.BitmapToImgSource(originalBitmap);
+                        
+                        /*g.DrawRectangle(new System.Drawing.Pen(System.Drawing.Color.Red, 2), rectangle);*/
+
+                        /*rectangle.Width = 100;
+                        rectangle.Height = 100;
+
+                        rectangle.X = x;
+                        rectangle.Y = y;*/
+
+                        //processedPicture = converter.BitmapToImgSource()
                     }
                 }
             });
