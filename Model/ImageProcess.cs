@@ -39,6 +39,34 @@ namespace VideoProcess.Model
             return true;
         }
 
+        // 새로운 비트맵 생성
+        public unsafe (Bitmap bitmap, BitmapData bitmapData, int bytePerPixel) CreateNewBitmap(Bitmap bitmap, int width, int height)
+        {
+            Bitmap newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            int bytesPerPixel = 0;
+            if (bitmap.PixelFormat == PixelFormat.Format32bppRgb || bitmap.PixelFormat == PixelFormat.Format32bppArgb)
+            {
+                bytesPerPixel = 4;
+                newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            }
+            else if (bitmap.PixelFormat == PixelFormat.Format8bppIndexed)
+            {
+                bytesPerPixel = 1;
+                newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+                ColorPalette palette = newBitmap.Palette;
+                for (int i = 0; i < 256; i++)
+                {
+                    palette.Entries[i] = Color.FromArgb(i, i, i); // 흑백 팔레트
+                }
+                newBitmap.Palette = palette;
+            }
+
+            BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);
+
+            return (newBitmap, bmpData, bytesPerPixel);
+        }
+
         /* 팽창
          *  구조적 요소(커널) 정의 > 팽창 적용
          */
@@ -46,8 +74,12 @@ namespace VideoProcess.Model
         {
             int width = bitmap.Width;
             int height = bitmap.Height;
+            /*Bitmap newBitmap;
+            BitmapData bmpData;
             int bytesPerPixel = 0;
 
+            (newBitmap, bmpData, bytesPerPixel) = CreateNewBitmap(bitmap, width, height);*/
+            int bytesPerPixel = 0;
             if (bitmap.PixelFormat == PixelFormat.Format32bppRgb || bitmap.PixelFormat == PixelFormat.Format32bppArgb)
             {
                 bytesPerPixel = 4;
@@ -86,7 +118,7 @@ namespace VideoProcess.Model
             { 1, 1, 1 }
             };
 
-            for(int x = 0; x < width; x++)
+            for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {

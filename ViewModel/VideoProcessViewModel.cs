@@ -17,6 +17,7 @@ using System.Drawing.Imaging;
 using Image = System.Windows.Controls.Image;
 using System.Windows.Forms;
 using VideoProcess.View;
+using System.Diagnostics;
 
 namespace VideoProcess.ViewModel
 {
@@ -25,8 +26,9 @@ namespace VideoProcess.ViewModel
         public ImageTool imageTool;
         public Converter converter;
         public ImageProcess imageProcess;
-        public PreviewViewModel PreviewViewModel;
-        public PreviewView previewView;
+       /* public PreviewViewModel PreviewViewModel;
+        public PreviewView previewView;*/
+        Stopwatch stopwatch = new Stopwatch();
         private double scale = 1.0;
 
         public VideoProcessViewModel()
@@ -34,8 +36,8 @@ namespace VideoProcess.ViewModel
             imageTool = new ImageTool();
             converter = new Converter();
             imageProcess = new ImageProcess();
-            PreviewViewModel = new PreviewViewModel();
-            previewView = new PreviewView() { DataContext = PreviewViewModel };
+            /*PreviewViewModel = new PreviewViewModel();
+            previewView = new PreviewView() { DataContext = PreviewViewModel };*/
             //previewView.Show();
         }
 
@@ -46,7 +48,7 @@ namespace VideoProcess.ViewModel
             set
             {
                 loadPicture = value;
-                PreviewViewModel.PreviewImage = value;
+                //PreviewViewModel.PreviewImage = value;
                 OnPropertyChanged(nameof(LoadPicture));
             }
         }
@@ -59,6 +61,17 @@ namespace VideoProcess.ViewModel
             {
                 processedPicture = value;
                 OnPropertyChanged(nameof(ProcessedPicture));
+            }
+        }
+
+        private string time;
+        public string Time
+        {
+            get => time;
+            set
+            {
+                time = value;
+                OnPropertyChanged(nameof(Time));
             }
         }
 
@@ -88,12 +101,15 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
+                stopwatch.Start();
                 ImageSource openImage = converter.StringToImgSource(imageTool.Open());
                 if(openImage != null)
                 {
                     loadPicture = openImage;
                     LoadPicture = loadPicture;
                 }
+                stopwatch.Stop();
+                Time = stopwatch.ElapsedMilliseconds.ToString();
             });
         }
 
@@ -117,10 +133,11 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
+                stopwatch.Start();
                 if (LoadPicture != null)
                 {
                     unsafe
-                    {
+                    {   
                         Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
                         byte* p = converter.ImgSourceToBytePointer(bitmap);
                         /*// 이진화 추가
@@ -135,6 +152,8 @@ namespace VideoProcess.ViewModel
                     }
                     ProcessedPicture = processedPicture;
                 }
+                stopwatch.Stop();
+                Time = stopwatch.ElapsedMilliseconds.ToString();
             });
         }
 
@@ -143,6 +162,7 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
+                stopwatch.Start();
                 if (LoadPicture != null)
                 {
                     // 이진화 체크 코드 추가
@@ -158,10 +178,12 @@ namespace VideoProcess.ViewModel
                             p = converter.ImgSourceToBytePointer(bitmap);
                         }*/
                         Bitmap processedBitmap = imageProcess.Shrinkage(p, bitmap);
-                        processedPicture = converter.BitmapToImgSource(processedBitmap);
+                        ProcessedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
                     ProcessedPicture = processedPicture;
                 }
+                stopwatch.Stop();
+                Time = stopwatch.ElapsedMilliseconds.ToString();
             });
         }
 
@@ -170,6 +192,7 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
+                stopwatch.Start();
                 if (LoadPicture != null)
                 {
                     unsafe
@@ -181,6 +204,8 @@ namespace VideoProcess.ViewModel
                     }
                     //ProcessedPicture = processedPicture;
                 }
+                stopwatch.Stop();
+                Time = stopwatch.ElapsedMilliseconds.ToString();
             });
         }
 
@@ -189,7 +214,8 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
-                if(LoadPicture != null)
+                stopwatch.Start();
+                if (LoadPicture != null)
                 {
                     unsafe
                     {
@@ -200,6 +226,8 @@ namespace VideoProcess.ViewModel
                     }
                     ProcessedPicture = processedPicture;
                 }
+                stopwatch.Stop();
+                Time = stopwatch.ElapsedMilliseconds.ToString();
             });
         }
 
@@ -208,6 +236,7 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
+                stopwatch.Start();
                 if (LoadPicture != null)
                 {
                     unsafe
@@ -219,6 +248,8 @@ namespace VideoProcess.ViewModel
                     }
                     ProcessedPicture = processedPicture;
                 }
+                stopwatch.Stop();
+                Time = stopwatch.ElapsedMilliseconds.ToString();
             });
         }
 
@@ -227,7 +258,8 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
-                if(LoadPicture != null)
+                stopwatch.Start();
+                if (LoadPicture != null)
                 {
                     unsafe
                     {
@@ -238,6 +270,8 @@ namespace VideoProcess.ViewModel
                     }
                     ProcessedPicture = processedPicture;
                 }
+                stopwatch.Stop();
+                Time = stopwatch.ElapsedMilliseconds.ToString();
             });
         }
 
@@ -265,6 +299,7 @@ namespace VideoProcess.ViewModel
         {
             get => new RelayCommand(() =>
             {
+                stopwatch.Start();
                 if (LoadPicture != null)
                 {
                     ImageSource openImage = converter.StringToImgSource(imageTool.Open());
@@ -303,6 +338,8 @@ namespace VideoProcess.ViewModel
                         return;
                     }    
                 }
+                stopwatch.Stop();
+                Time = stopwatch.ElapsedMilliseconds.ToString();
             });
         }
     }

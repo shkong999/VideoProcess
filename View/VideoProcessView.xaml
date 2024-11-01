@@ -104,28 +104,28 @@
         <Button Content="필터 가우스" 
                 HorizontalAlignment="Left" 
                 Height="30" 
-                Margin="1082,394,0,0" 
+                Margin="1082,359,0,0" 
                 VerticalAlignment="Top" 
                 Width="108"
                 Command="{Binding Gaussian}"/>
         <Button Content="필터 라플라스" 
                 HorizontalAlignment="Left" 
                 Height="30" 
-                Margin="1082,428,0,0" 
+                Margin="1082,393,0,0" 
                 VerticalAlignment="Top" 
                 Width="108"
                 Command="{Binding Laplace}"/>
         <Button Content="필터 FFT" 
                 HorizontalAlignment="Left" 
                 Height="30" 
-                Margin="1082,464,0,0" 
+                Margin="1082,429,0,0" 
                 VerticalAlignment="Top" 
                 Width="108"
                 Command="{Binding Fft}"/>
         <Button Content="템플릿 매칭" 
                 HorizontalAlignment="Left" 
                 Height="30" 
-                Margin="1082,500,0,-10" 
+                Margin="1082,465,0,0" 
                 VerticalAlignment="Top" 
                 Width="108"
                 Command="{Binding Matching}"/>
@@ -151,5 +151,23 @@
             <Run Text="결과 "/>
             <Run Text="이미지"/>
         </TextBlock>
+        <TextBox Height="19" 
+                 TextWrapping="Wrap" 
+                 Text="{Binding Time}" 
+                 VerticalAlignment="Top" 
+                 Width="84" 
+                 Margin="1085,528,31,-27"
+                 FontSize="11"
+                 TextAlignment="Right"/>
+        <TextBlock HorizontalAlignment="Left" 
+                   TextWrapping="Wrap" 
+                   Text="소요시간" 
+                   VerticalAlignment="Top" 
+                   Margin="1074,508,0,-4"/>
+        <TextBlock HorizontalAlignment="Left" 
+            TextWrapping="Wrap" 
+            Text="ms" 
+            VerticalAlignment="Top" 
+            Margin="1174,530,0,-26"/>
     </Grid>
 </Window>
