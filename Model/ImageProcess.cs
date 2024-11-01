@@ -67,6 +67,12 @@ namespace VideoProcess.Model
             else if (bytesPerPixel == 1)
             {
                 newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+                ColorPalette palette = newBitmap.Palette;
+                for (int i = 0; i < 256; i++)
+                {
+                    palette.Entries[i] = Color.FromArgb(i, i, i); // 흑백 팔레트
+                }
+                newBitmap.Palette = palette;
             }
 
             BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);
@@ -150,6 +156,12 @@ namespace VideoProcess.Model
             else if (bytesPerPixel == 1)
             {
                 newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+                ColorPalette palette = newBitmap.Palette;
+                for (int i = 0; i < 256; i++)
+                {
+                    palette.Entries[i] = Color.FromArgb(i, i, i); // 흑백 팔레트
+                }
+                newBitmap.Palette = palette;
             }
 
             BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);
@@ -285,12 +297,13 @@ namespace VideoProcess.Model
                 cdfHistogram[i] = (cdfHistogram[i - 1] + histogram[i]);
             }
 
-            // 누적 히스토그램에 최빈값을 곱한 뒤 평활화 히스토그램 계산
+            // 누적 히스토그램에 최대값을 곱해 평활화 히스토그램 계산
             for (int i = 0; i < cdfHistogram.Length; i++)
             {
                 equalHistogram[i] = (int)Math.Round(cdfHistogram[i] * 255);
             }
 
+            // 색상 값 할당
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -981,17 +994,37 @@ namespace VideoProcess.Model
         }
 
 
-        // imageProcess.Matching(templateBitmap, tBitmap, originalBitmap, pBitmap)
+        // 템플릿 매칭
         public unsafe Point Matching(Bitmap templateBitmap, byte* tBitmap, Bitmap originalBitmap, byte* pBitmap)
         {
-            int[,] kernel = new int[templateBitmap.Width, templateBitmap.Height];
+            int tBytePerPixel = 0;
+            int oBytePerPixel = 0;
 
             long bestMatchValue = long.MaxValue;
-            System.Drawing.Point bestMatchLocation = new System.Drawing.Point(-1, -1);
-
-            for (int y = 0; y < originalBitmap.Height - templateBitmap.Height; y++)
+            if (templateBitmap.PixelFormat == PixelFormat.Format32bppRgb || templateBitmap.PixelFormat == PixelFormat.Format32bppArgb)
             {
-                for(int x = 0; x < originalBitmap.Width - templateBitmap.Width; x++)
+                tBytePerPixel = 4;
+            }
+            else if (templateBitmap.PixelFormat == PixelFormat.Format8bppIndexed)
+            {
+                tBytePerPixel = 1;
+            }
+
+            if (originalBitmap.PixelFormat == PixelFormat.Format32bppRgb || originalBitmap.PixelFormat == PixelFormat.Format32bppArgb)
+            {
+                oBytePerPixel = 4;
+            }
+            else if (originalBitmap.PixelFormat == PixelFormat.Format8bppIndexed)
+            {
+                oBytePerPixel = 1;
+            }
+
+            System.Drawing.Point bestMatchLocation = new System.Drawing.Point(0, 0);
+            int[,] kernel = new int[templateBitmap.Width, templateBitmap.Height];
+
+            for (int y = 0; y <= originalBitmap.Height - templateBitmap.Height; y++)
+            {
+                for(int x = 0; x <= originalBitmap.Width - templateBitmap.Width; x++)
                 {
                     long matchValue = 0;
 
@@ -999,15 +1032,12 @@ namespace VideoProcess.Model
                     {
                         for (int kernelX = 0; kernelX < templateBitmap.Width; kernelX++)
                         {
-                            // 1 = bytePerPixel
-                            int originalIndex = ((y + kernelY) * originalBitmap.Width + (x + kernelX)) * 3;
-                            int templateIndex = (kernelY * templateBitmap.Width + kernelX) * 3;
+                            int originalIndex = ((y + kernelY) * originalBitmap.Width + (x + kernelX)) * oBytePerPixel;
+                            int templateIndex = (kernelY * templateBitmap.Width + kernelX) * tBytePerPixel;
 
-                            /*float difference */
                             matchValue += Math.Abs(pBitmap[originalIndex] - tBitmap[templateIndex]);
                         }
                     }
-                    //matchValue /= (templateBitmap.Width * templateBitmap.Height);
 
                     // 최고 유사도 찾기
                     if (matchValue < bestMatchValue)

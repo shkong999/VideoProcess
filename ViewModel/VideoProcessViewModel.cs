@@ -36,7 +36,7 @@ namespace VideoProcess.ViewModel
             imageProcess = new ImageProcess();
             PreviewViewModel = new PreviewViewModel();
             previewView = new PreviewView() { DataContext = PreviewViewModel };
-            previewView.Show();
+            //previewView.Show();
         }
 
         private ImageSource loadPicture;
@@ -61,12 +61,6 @@ namespace VideoProcess.ViewModel
                 OnPropertyChanged(nameof(ProcessedPicture));
             }
         }
-
-        /*private Frame previewFrame = new Frame();
-        public Frame PreviewFrame
-        {
-            get => 
-        }*/
 
         // 이미지 확대 / 축소
         public void OnMouseWheel(object sender, MouseWheelEventArgs e)
@@ -125,18 +119,17 @@ namespace VideoProcess.ViewModel
             {
                 if (LoadPicture != null)
                 {
-                    // 이진화 체크 코드 추가
                     unsafe
                     {
                         Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
                         byte* p = converter.ImgSourceToBytePointer(bitmap);
-                        // 이진화 추가
+                        /*// 이진화 추가
                         bool check = imageProcess.CheckBinary(p, bitmap.Width, bitmap.Height, 1);
                         if (check == false)
                         {
                             bitmap = imageProcess.Binarization(p, bitmap);
                             p = converter.ImgSourceToBytePointer(bitmap);
-                        }
+                        }*/
                         Bitmap processedBitmap = imageProcess.Expansion(p, bitmap);
                         processedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
@@ -157,13 +150,13 @@ namespace VideoProcess.ViewModel
                     {
                         Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
                         byte* p = converter.ImgSourceToBytePointer(bitmap);
-                        // 이진화 추가
+                        /*// 이진화 추가
                         bool check = imageProcess.CheckBinary(p, bitmap.Width, bitmap.Height, 1);
                         if (check == false)
                         {
                             bitmap = imageProcess.Binarization(p, bitmap);
                             p = converter.ImgSourceToBytePointer(bitmap);
-                        }
+                        }*/
                         Bitmap processedBitmap = imageProcess.Shrinkage(p, bitmap);
                         processedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
@@ -184,9 +177,7 @@ namespace VideoProcess.ViewModel
                         Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
                         byte* p = converter.ImgSourceToBytePointer(bitmap);
                         Bitmap processedBitmap = imageProcess.Smoothing(p, bitmap);
-                        //BitmapSource test = new BitmapSource(processedBitmap);
-                        ImageSource temp = converter.BitmapToImgSource(processedBitmap);
-                        ProcessedPicture = temp;
+                        ProcessedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
                     //ProcessedPicture = processedPicture;
                 }
@@ -279,43 +270,38 @@ namespace VideoProcess.ViewModel
                     ImageSource openImage = converter.StringToImgSource(imageTool.Open());
                     processedPicture = openImage;
 
-                    unsafe
+                    if (processedPicture != null)
                     {
-                        Bitmap templateBitmap = converter.ImgSourceToBitmap(processedPicture);
-                        byte* tBitmap = converter.ImgSourceToBytePointer(templateBitmap);
-
-                        Bitmap originalBitmap = converter.ImgSourceToBitmap(loadPicture);
-                        byte* pBitmap = converter.ImgSourceToBytePointer(originalBitmap);
-
-                        System.Drawing.Point bestPoint = imageProcess.Matching(templateBitmap, tBitmap, originalBitmap, pBitmap);
-
-                        Rectangle cropArea = new Rectangle(0, 0, (int)loadPicture.Width, (int)loadPicture.Height); // 크롭할 영역 정의
-                        Bitmap croppedBitmap = new Bitmap(cropArea.Width, cropArea.Height);
-
-                        int x = bestPoint.X;
-                        int y = bestPoint.Y;
-                        Rectangle rectangle = new Rectangle(x, y, templateBitmap.Width, templateBitmap.Height);
-
-                        using (Graphics g = Graphics.FromImage(originalBitmap))
+                        unsafe
                         {
-                            using (System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Red, 3)) 
+                            Bitmap templateBitmap = converter.ImgSourceToBitmap(processedPicture);
+                            byte* tBitmap = converter.ImgSourceToBytePointer(templateBitmap);
+
+                            Bitmap originalBitmap = converter.ImgSourceToBitmap(loadPicture);
+                            byte* pBitmap = converter.ImgSourceToBytePointer(originalBitmap);
+
+                            System.Drawing.Point bestPoint = imageProcess.Matching(templateBitmap, tBitmap, originalBitmap, pBitmap);
+
+                            int x = bestPoint.X;
+                            int y = bestPoint.Y;
+                            Rectangle rectangle = new Rectangle(x, y, templateBitmap.Width, templateBitmap.Height);
+
+                            using (Graphics g = Graphics.FromImage(originalBitmap))
                             {
-                                g.DrawRectangle(pen, rectangle);
+                                using (System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Red, 3))
+                                {
+                                    g.DrawRectangle(pen, rectangle);
+                                }
                             }
+
+                            ProcessedPicture = converter.BitmapToImgSource(originalBitmap);
                         }
-
-                        LoadPicture = converter.BitmapToImgSource(originalBitmap);
-                        
-                        /*g.DrawRectangle(new System.Drawing.Pen(System.Drawing.Color.Red, 2), rectangle);*/
-
-                        /*rectangle.Width = 100;
-                        rectangle.Height = 100;
-
-                        rectangle.X = x;
-                        rectangle.Y = y;*/
-
-                        //processedPicture = converter.BitmapToImgSource()
                     }
+                    else
+                    {
+                        System.Windows.MessageBox.Show("이미지를 선택해주세요.");
+                        return;
+                    }    
                 }
             });
         }
