@@ -740,7 +740,7 @@ namespace VideoProcess.Model
             double variance = varianceSum / totalPixel;
 
             // 표준편차 계산
-            double standardDeviation = 2;//Math.Sqrt(variance);
+            double standardDeviation = 5;//Math.Sqrt(variance);
 
             // 가우시안 커널 생성
             int kernelSize = 6 * (int)standardDeviation;
@@ -757,7 +757,7 @@ namespace VideoProcess.Model
             {
                 for (int x = -radius; x <= radius; x++)
                 {
-                    double value = (2 * Math.PI * variance) * Math.Exp(-((x * x) + (y * y)) / (2 * variance));
+                    double value = (2 * Math.PI * variance) * Math.Exp(-((x * x) + (y * y)) / (2 * standardDeviation * standardDeviation));
                     kernel[x + radius, y + radius] = value;
                     sum += value;
                 }

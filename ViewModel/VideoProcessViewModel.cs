@@ -244,6 +244,14 @@ namespace VideoProcess.ViewModel
                         processedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
                     ProcessedPicture = processedPicture;
+
+                    /*Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
+                    byte* p = converter.ImgSourceToBytePointer(bitmap);
+                    int bytesPerPixel = (bitmap.PixelFormat == PixelFormat.Format32bppRgb) ? 4 : 1;
+                    byte* result = VideoProcessCLR.VideoProcessCLR.Gaussion(p, bitmap.Width, bitmap.Height, bytesPerPixel);
+                    Bitmap processedBitmap = converter.BytePointerToImageSource(result, bitmap.Width, bitmap.Height, bytesPerPixel);
+                    ProcessedPicture = converter.BitmapToImgSource(processedBitmap);
+                }*/
                 }
                 stopwatch.Stop();
                 Time = stopwatch.ElapsedMilliseconds.ToString();

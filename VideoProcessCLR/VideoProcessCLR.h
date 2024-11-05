@@ -9,5 +9,6 @@ namespace VideoProcessCLR {
 	public:
 		static byte* Smoothing(byte* pBitmap, int width, int height, int bytePerPixel);
 		static byte* Binization(byte* pBitmap, int width, int height, int bytePerPixel);
+		static byte* Gaussion(byte* pBitmap, int width, int height, int bytePerPixel);
 	};
 }
