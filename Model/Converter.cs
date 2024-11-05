@@ -98,9 +98,56 @@ namespace VideoProcess.Model
             {
                 p = (byte*)bitmapData.Scan0; // 비트맵의 첫 번째 픽셀 주소
             }
-            bitmap.UnlockBits(bitmapData);
+            /*bitmap.UnlockBits(bitmapData);*/
 
             return p;
+        }
+
+        public unsafe Bitmap BytePointerToImageSource(byte* bytePointer,int width, int height, int bytePerPixel)
+        {
+            Bitmap newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed); 
+
+            if (bytePerPixel == 4)
+            {
+                newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            }
+            else if (bytePerPixel == 1)
+            {
+                newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
+                ColorPalette palette = newBitmap.Palette;
+                for (int i = 0; i < 256; i++)
+                {
+                    palette.Entries[i] = System.Drawing.Color.FromArgb(i, i, i); // 흑백 팔레트
+                }
+                newBitmap.Palette = palette;
+            }
+
+            BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);
+
+            IntPtr ptr = bmpData.Scan0;
+            byte* bmpPtr = (byte*)ptr.ToPointer();
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    byte* pixel = bytePointer + (y * width + x) * bytePerPixel;
+
+                    if (bytePerPixel == 4)
+                    {
+                        bmpPtr[(y * width + x) * 4] = pixel[0];  // Blue
+                        bmpPtr[(y * width + x) * 4 + 1] = pixel[1];  // Green
+                        bmpPtr[(y * width + x) * 4 + 2] = pixel[2];  // Red
+                        bmpPtr[(y * width + x) * 4 + 3] = pixel[3];  // Alpha
+                    }
+                    else if (bytePerPixel == 1) // 8bpp (팔레트 인덱스)
+                    {
+                        bmpPtr[y * width + x] = *pixel;  
+                    }
+                }
+            }
+            newBitmap.UnlockBits(bmpData);
+            return newBitmap;
         }
     }
 }

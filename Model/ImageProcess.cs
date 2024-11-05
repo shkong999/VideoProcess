@@ -16,14 +16,13 @@ using System.Windows.Media.Imaging;
 using Color = System.Drawing.Color;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
 using Point = System.Drawing.Point;
-using VideoProcessCLR;
 
 namespace VideoProcess.Model
 {
     
     public class ImageProcess
     {
-        private Class1 testClass1 = new Class1();
+        //private VideoProcessCLR.videoProcessCLR testClass1 = new videoProcessCLR();
         Stopwatch stopwatch = new Stopwatch();
         String Time = "";
         // 이진 이미지 확인
@@ -346,7 +345,7 @@ namespace VideoProcess.Model
 
 
 
-            object p = Class1.Add(1, 2);
+            //object p = Class1.Add(1, 2);
             int width = bitmap.Width;
             int height = bitmap.Height;
             double[] histogram = new double[256];
@@ -518,6 +517,8 @@ namespace VideoProcess.Model
          */
         public unsafe Bitmap Binarization(byte* pBitmap, Bitmap bitmap)
         {
+           /* Bitmap returnBitmap = Class1.(pBitmap, bitmap);
+            return returnBitmap;*/
             int width = bitmap.Width;
             int height = bitmap.Height;
             int[] histogram = new int[256];
@@ -565,14 +566,14 @@ namespace VideoProcess.Model
                         gray = (byte)pixel[0];
                     }
 
-                    // 새로운 비트맵에 픽셀 설정
+                   /* // 새로운 비트맵에 픽셀 설정
                     pNewBitmap[(y * width + x) * bytesPerPixel + 0] = gray;
                     if (bytesPerPixel == 4)
                     {
                         pNewBitmap[(y * width + x) * bytesPerPixel + 1] = gray; // Green
                         pNewBitmap[(y * width + x) * bytesPerPixel + 2] = gray; // Red
                         pNewBitmap[(y * width + x) * bytesPerPixel + 3] = 255; // Alpha
-                    }
+                    }*/
 
                     histogram[gray]++;
                 }

@@ -1,23 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Windows.Controls;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using System.Windows.Media;
-using Microsoft.Win32;
 using VideoProcess.Tools;
-using System.Windows.Media.Imaging;
 using System.Drawing;
 using VideoProcess.Model;
-using System.Drawing.Imaging;
 using Image = System.Windows.Controls.Image;
-using System.Windows.Forms;
-using VideoProcess.View;
 using System.Diagnostics;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
 using VideoProcessCLR;
 
 namespace VideoProcess.ViewModel
@@ -31,7 +19,6 @@ namespace VideoProcess.ViewModel
         public PreviewView previewView;*/
         Stopwatch stopwatch = new Stopwatch();
         private double scale = 1.0;
-        private Class1 testClass1 = new Class1();
 
         public VideoProcessViewModel()
         {
@@ -201,8 +188,11 @@ namespace VideoProcess.ViewModel
                     {
                         Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
                         byte* p = converter.ImgSourceToBytePointer(bitmap);
+                        int bytesPerPixel = (bitmap.PixelFormat == PixelFormat.Format32bppRgb) ? 4 : 1;
+                        byte* result = VideoProcessCLR.VideoProcessCLR.Smoothing(p, bitmap.Width, bitmap.Height, bytesPerPixel);
+                        Bitmap processedBitmap = converter.BytePointerToImageSource(result, bitmap.Width, bitmap.Height, bytesPerPixel);
                         //Bitmap processedBitmap = imageProcess.Smoothing(p, bitmap);
-                        Bitmap processedBitmap = Class1.Smoothing(p, bitmap);
+                        //Bitmap processedBitmap = Class1.Smoothing(p, bitmap);
                         ProcessedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
                     //ProcessedPicture = processedPicture;
@@ -224,10 +214,14 @@ namespace VideoProcess.ViewModel
                     {
                         Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
                         byte* p = converter.ImgSourceToBytePointer(bitmap);
-                        Bitmap processedBitmap = imageProcess.Binarization(p, bitmap);
-                        processedPicture = converter.BitmapToImgSource(processedBitmap);
+                        int bytesPerPixel = (bitmap.PixelFormat == PixelFormat.Format32bppRgb) ? 4 : 1;
+                        byte* result = VideoProcessCLR.VideoProcessCLR.Binization(p, bitmap.Width, bitmap.Height, bytesPerPixel);
+                        Bitmap processedBitmap = converter.BytePointerToImageSource(result, bitmap.Width, bitmap.Height, bytesPerPixel);
+                        /*Bitmap processedBitmap = imageProcess.Binarization(p, bitmap);
+                        processedPicture = converter.BitmapToImgSource(processedBitmap);*/
+                        ProcessedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
-                    ProcessedPicture = processedPicture;
+                    /*ProcessedPicture = processedPicture;*/
                 }
                 stopwatch.Stop();
                 Time = stopwatch.ElapsedMilliseconds.ToString();

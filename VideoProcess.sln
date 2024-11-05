@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.35229.62
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoProcess", "VideoProcess.csproj", "{E99AA4C2-9C1D-483D-8280-6EF85BFF8896}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoProcessCLR", "..\VideoProcessCLR\VideoProcessCLR.vcxproj", "{A93F1BAB-18BA-4796-BA8A-8D00ACEA1FD5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoProcessCLR", "VideoProcessCLR\VideoProcessCLR.vcxproj", "{FC982BFB-FC03-4A78-8B10-E8AA12C2F655}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,16 +29,16 @@ Global
 		{E99AA4C2-9C1D-483D-8280-6EF85BFF8896}.Release|x64.Build.0 = Release|x64
 		{E99AA4C2-9C1D-483D-8280-6EF85BFF8896}.Release|x86.ActiveCfg = Release|Any CPU
 		{E99AA4C2-9C1D-483D-8280-6EF85BFF8896}.Release|x86.Build.0 = Release|Any CPU
-		{A93F1BAB-18BA-4796-BA8A-8D00ACEA1FD5}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{A93F1BAB-18BA-4796-BA8A-8D00ACEA1FD5}.Debug|x64.ActiveCfg = Debug|x64
-		{A93F1BAB-18BA-4796-BA8A-8D00ACEA1FD5}.Debug|x64.Build.0 = Debug|x64
-		{A93F1BAB-18BA-4796-BA8A-8D00ACEA1FD5}.Debug|x86.ActiveCfg = Debug|Win32
-		{A93F1BAB-18BA-4796-BA8A-8D00ACEA1FD5}.Debug|x86.Build.0 = Debug|Win32
-		{A93F1BAB-18BA-4796-BA8A-8D00ACEA1FD5}.Release|Any CPU.ActiveCfg = Release|Win32
-		{A93F1BAB-18BA-4796-BA8A-8D00ACEA1FD5}.Release|x64.ActiveCfg = Release|x64
-		{A93F1BAB-18BA-4796-BA8A-8D00ACEA1FD5}.Release|x64.Build.0 = Release|x64
-		{A93F1BAB-18BA-4796-BA8A-8D00ACEA1FD5}.Release|x86.ActiveCfg = Release|Win32
-		{A93F1BAB-18BA-4796-BA8A-8D00ACEA1FD5}.Release|x86.Build.0 = Release|Win32
+		{FC982BFB-FC03-4A78-8B10-E8AA12C2F655}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{FC982BFB-FC03-4A78-8B10-E8AA12C2F655}.Debug|x64.ActiveCfg = Debug|x64
+		{FC982BFB-FC03-4A78-8B10-E8AA12C2F655}.Debug|x64.Build.0 = Debug|x64
+		{FC982BFB-FC03-4A78-8B10-E8AA12C2F655}.Debug|x86.ActiveCfg = Debug|Win32
+		{FC982BFB-FC03-4A78-8B10-E8AA12C2F655}.Debug|x86.Build.0 = Debug|Win32
+		{FC982BFB-FC03-4A78-8B10-E8AA12C2F655}.Release|Any CPU.ActiveCfg = Release|Win32
+		{FC982BFB-FC03-4A78-8B10-E8AA12C2F655}.Release|x64.ActiveCfg = Release|x64
+		{FC982BFB-FC03-4A78-8B10-E8AA12C2F655}.Release|x64.Build.0 = Release|x64
+		{FC982BFB-FC03-4A78-8B10-E8AA12C2F655}.Release|x86.ActiveCfg = Release|Win32
+		{FC982BFB-FC03-4A78-8B10-E8AA12C2F655}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
