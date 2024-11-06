@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using Color = System.Drawing.Color;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
 using Point = System.Drawing.Point;
+//using VideoProcessCLR;
 
 namespace VideoProcess.Model
 {
@@ -123,7 +124,7 @@ namespace VideoProcess.Model
             { 1, 1, 1 }
             };
 
-            Parallel.For(0, width, x =>
+            /*Parallel.For(0, width, x =>
             {
                 Parallel.For(0, height, y =>
                 {
@@ -159,10 +160,10 @@ namespace VideoProcess.Model
                         pNewBitmap[outputIndex + 3] = 255;
                     }
                 });
-            });
-            /*for (int x = 0; x < width; x++)
+            });*/
+            for (int y = 0; y < height; y++)
             {
-                for (int y = 0; y < height; y++)
+                for (int x = 0; x < width; x++)
                 {
                     // 최대값 저장
                     byte maxValue = 0;
@@ -189,14 +190,14 @@ namespace VideoProcess.Model
                     }
                     int outputIndex = y * width * bytesPerPixel + x * bytesPerPixel;
                     pNewBitmap[outputIndex] = maxValue;
-                    if(bytesPerPixel == 4)
+                    if (bytesPerPixel == 4)
                     {
                         pNewBitmap[outputIndex + 1] = maxValue;
                         pNewBitmap[outputIndex + 2] = maxValue;
                         pNewBitmap[outputIndex + 3] = 255;
                     }
                 }
-            }*/
+            }
             newBitmap.UnlockBits(bmpData);
 
             return newBitmap;
@@ -254,7 +255,7 @@ namespace VideoProcess.Model
             { 1, 1, 1 }
             };
 
-            Parallel.For(0, width, x =>
+            /*Parallel.For(0, width, x =>
             {
                 Parallel.For(0, height, y =>
                 {
@@ -290,9 +291,9 @@ namespace VideoProcess.Model
                         pNewBitmap[outputIndex + 3] = 255;
                     }
                 });
-            });
+            });*/
 
-            /*for (int x = 0; x < width; x++)
+            for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
@@ -328,7 +329,7 @@ namespace VideoProcess.Model
                         pNewBitmap[outputIndex + 3] = 255;
                     }
                 }
-            }*/
+            }
             newBitmap.UnlockBits(bmpData);
 
             return newBitmap;
@@ -869,55 +870,16 @@ namespace VideoProcess.Model
             { -1, -1, -1 }
             };
 
-            Parallel.For(0, width, x =>
+            for (int y = 0; y < height; y++)
             {
-                Parallel.For(0, height, y =>
+                for (int x = 0; x < width; x++)
                 {
                     double value = 0;
 
                     // kernel size > 3x3
-                    for (int kernelX = -1; kernelX <= 1; kernelX++)
+                    for (int kernelY = -1; kernelY <= 1; kernelY++)
                     {
-                        for (int kernelY = -1; kernelY <= 1; kernelY++)
-                        {
-                            int newX = x + kernelX;
-                            int newY = y + kernelY;
-
-                            // 경계 체크
-                            if (newX >= 0 && newX < width && newY >= 0 && newY < height)
-                            {
-                                int pixelIndex = newY * width * bytesPerPixel + newX * bytesPerPixel;
-                                byte pixelValue = pBitmap[pixelIndex];
-
-                                double kernelValue = kernel[kernelX + 1, kernelY + 1];
-                                value += kernelValue * pixelValue;
-                            }
-                        }
-                    }
-                    value = Math.Min(255, Math.Max(0, value));
-
-                    int outputIndex = y * width * bytesPerPixel + x * bytesPerPixel;
-                    pNewBitmap[outputIndex] = (byte)Math.Min(255, Math.Max(0, value));
-
-                    if (bytesPerPixel == 4)
-                    {
-                        pNewBitmap[outputIndex + 1] = (byte)Math.Min(255, Math.Max(0, value));
-                        pNewBitmap[outputIndex + 2] = (byte)Math.Min(255, Math.Max(0, value));
-                        pNewBitmap[outputIndex + 3] = 255;
-                    }
-                });
-            });
-
-            /*for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    double value = 0;
-
-                    // kernel size > 3x3
-                    for (int kernelX = -1; kernelX <= 1; kernelX++)
-                    {
-                        for (int kernelY = -1; kernelY <= 1; kernelY++)
+                        for (int kernelX = -1; kernelX <= 1; kernelX++)
                         {
                             int newX = x + kernelX;
                             int newY = y + kernelY;
@@ -945,7 +907,7 @@ namespace VideoProcess.Model
                         pNewBitmap[outputIndex + 3] = 255;
                     }
                 }
-            }*/
+            }
 
             // 비트맵 잠금 해제
             newBitmap.UnlockBits(bmpData);

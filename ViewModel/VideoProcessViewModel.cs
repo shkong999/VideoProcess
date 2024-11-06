@@ -8,6 +8,7 @@ using System.Diagnostics;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
 using VideoProcessCLR;
 
+
 namespace VideoProcess.ViewModel
 {
     public class VideoProcessViewModel : OnPropertyChange
@@ -137,9 +138,13 @@ namespace VideoProcess.ViewModel
                             p = converter.ImgSourceToBytePointer(bitmap);
                         }*/
                         Bitmap processedBitmap = imageProcess.Expansion(p, bitmap);
-                        processedPicture = converter.BitmapToImgSource(processedBitmap);
+                        ProcessedPicture = converter.BitmapToImgSource(processedBitmap);
+                        /*int bytesPerPixel = (bitmap.PixelFormat == PixelFormat.Format32bppRgb) ? 4 : 1;
+                        byte* result = VideoProcessCLR.VideoProcessCLR.Expansion(p, bitmap.Width, bitmap.Height, bytesPerPixel);
+                        Bitmap processedBitmap = converter.BytePointerToImageSource(result, bitmap.Width, bitmap.Height, bytesPerPixel);
+                        ProcessedPicture = converter.BitmapToImgSource(processedBitmap);*/
                     }
-                    ProcessedPicture = processedPicture;
+                    /*ProcessedPicture = processedPicture;*/
                 }
                 stopwatch.Stop();
                 Time = stopwatch.ElapsedMilliseconds.ToString();
@@ -166,10 +171,14 @@ namespace VideoProcess.ViewModel
                             bitmap = imageProcess.Binarization(p, bitmap);
                             p = converter.ImgSourceToBytePointer(bitmap);
                         }*/
-                        Bitmap processedBitmap = imageProcess.Shrinkage(p, bitmap);
+                        /*Bitmap processedBitmap = imageProcess.Shrinkage(p, bitmap);
+                        ProcessedPicture = converter.BitmapToImgSource(processedBitmap);*/
+                        int bytesPerPixel = (bitmap.PixelFormat == PixelFormat.Format32bppRgb) ? 4 : 1;
+                        byte* result = VideoProcessCLR.VideoProcessCLR.Shrinkage(p, bitmap.Width, bitmap.Height, bytesPerPixel);
+                        Bitmap processedBitmap = converter.BytePointerToImageSource(result, bitmap.Width, bitmap.Height, bytesPerPixel);
                         ProcessedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
-                    ProcessedPicture = processedPicture;
+                    /*ProcessedPicture = processedPicture;*/
                 }
                 stopwatch.Stop();
                 Time = stopwatch.ElapsedMilliseconds.ToString();
@@ -238,20 +247,20 @@ namespace VideoProcess.ViewModel
                 {
                     unsafe
                     {
+                        /* Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
+                         byte* p = converter.ImgSourceToBytePointer(bitmap);
+                         Bitmap processedBitmap = imageProcess.Gaussion(p, bitmap);
+                         processedPicture = converter.BitmapToImgSource(processedBitmap);
+                     }
+                     ProcessedPicture = processedPicture;*/
+
                         Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
                         byte* p = converter.ImgSourceToBytePointer(bitmap);
-                        Bitmap processedBitmap = imageProcess.Gaussion(p, bitmap);
-                        processedPicture = converter.BitmapToImgSource(processedBitmap);
+                        int bytesPerPixel = (bitmap.PixelFormat == PixelFormat.Format32bppRgb) ? 4 : 1;
+                        byte* result = VideoProcessCLR.VideoProcessCLR.Gaussion(p, bitmap.Width, bitmap.Height, bytesPerPixel);
+                        Bitmap processedBitmap = converter.BytePointerToImageSource(result, bitmap.Width, bitmap.Height, bytesPerPixel);
+                        ProcessedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
-                    ProcessedPicture = processedPicture;
-
-                    /*Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
-                    byte* p = converter.ImgSourceToBytePointer(bitmap);
-                    int bytesPerPixel = (bitmap.PixelFormat == PixelFormat.Format32bppRgb) ? 4 : 1;
-                    byte* result = VideoProcessCLR.VideoProcessCLR.Gaussion(p, bitmap.Width, bitmap.Height, bytesPerPixel);
-                    Bitmap processedBitmap = converter.BytePointerToImageSource(result, bitmap.Width, bitmap.Height, bytesPerPixel);
-                    ProcessedPicture = converter.BitmapToImgSource(processedBitmap);
-                }*/
                 }
                 stopwatch.Stop();
                 Time = stopwatch.ElapsedMilliseconds.ToString();
@@ -268,12 +277,19 @@ namespace VideoProcess.ViewModel
                 {
                     unsafe
                     {
-                        Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
+                        /*Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
                         byte* p = converter.ImgSourceToBytePointer(bitmap);
                         Bitmap processedBitmap = imageProcess.Laplace(p, bitmap);
-                        processedPicture = converter.BitmapToImgSource(processedBitmap);
+                        processedPicture = converter.BitmapToImgSource(processedBitmap);*/
+
+                        Bitmap bitmap = converter.ImgSourceToBitmap(LoadPicture);
+                        byte* p = converter.ImgSourceToBytePointer(bitmap);
+                        int bytesPerPixel = (bitmap.PixelFormat == PixelFormat.Format32bppRgb) ? 4 : 1;
+                        byte* result = VideoProcessCLR.VideoProcessCLR.Laplace(p, bitmap.Width, bitmap.Height, bytesPerPixel);
+                        Bitmap processedBitmap = converter.BytePointerToImageSource(result, bitmap.Width, bitmap.Height, bytesPerPixel);
+                        ProcessedPicture = converter.BitmapToImgSource(processedBitmap);
                     }
-                    ProcessedPicture = processedPicture;
+                    /*ProcessedPicture = processedPicture;*/
                 }
                 stopwatch.Stop();
                 Time = stopwatch.ElapsedMilliseconds.ToString();
@@ -305,7 +321,7 @@ namespace VideoProcess.ViewModel
             get => new RelayCommand(() =>
             {
                 stopwatch.Start();
-                if (LoadPicture != null)
+                if (loadPicture != null)
                 {
                     ImageSource openImage = converter.StringToImgSource(imageTool.Open());
                     processedPicture = openImage;
@@ -316,15 +332,24 @@ namespace VideoProcess.ViewModel
                         {
                             Bitmap templateBitmap = converter.ImgSourceToBitmap(processedPicture);
                             byte* tBitmap = converter.ImgSourceToBytePointer(templateBitmap);
+                            int templateBytePerPixel = (templateBitmap.PixelFormat == PixelFormat.Format32bppRgb) ? 4 : 1;
 
                             Bitmap originalBitmap = converter.ImgSourceToBitmap(loadPicture);
                             byte* pBitmap = converter.ImgSourceToBytePointer(originalBitmap);
+                            int originalBytePerPixel = (originalBitmap.PixelFormat == PixelFormat.Format32bppRgb) ? 4 : 1;
 
-                            System.Drawing.Point bestPoint = imageProcess.Matching(templateBitmap, tBitmap, originalBitmap, pBitmap);
+                            /*System.Drawing.Point bestPoint = imageProcess.Matching(templateBitmap, tBitmap, originalBitmap, pBitmap);*/
+                            System.Drawing.Point bestPoint = VideoProcessCLR.VideoProcessCLR.Matching(pBitmap, originalBitmap.Width, originalBitmap.Height, originalBytePerPixel, tBitmap, templateBitmap.Width, templateBitmap.Height, templateBytePerPixel);
 
                             int x = bestPoint.X;
                             int y = bestPoint.Y;
                             Rectangle rectangle = new Rectangle(x, y, templateBitmap.Width, templateBitmap.Height);
+
+                            if (originalBitmap.PixelFormat != System.Drawing.Imaging.PixelFormat.Format32bppArgb)
+                            {
+                                originalBitmap = converter.BytePointerToImageSource(pBitmap, originalBitmap.Width, originalBitmap.Height, 4);
+                            }
+
 
                             using (Graphics g = Graphics.FromImage(originalBitmap))
                             {
@@ -333,7 +358,6 @@ namespace VideoProcess.ViewModel
                                     g.DrawRectangle(pen, rectangle);
                                 }
                             }
-
                             ProcessedPicture = converter.BitmapToImgSource(originalBitmap);
                         }
                     }
@@ -341,7 +365,7 @@ namespace VideoProcess.ViewModel
                     {
                         System.Windows.MessageBox.Show("이미지를 선택해주세요.");
                         return;
-                    }    
+                    }
                 }
                 stopwatch.Stop();
                 Time = stopwatch.ElapsedMilliseconds.ToString();

@@ -103,9 +103,9 @@ namespace VideoProcess.Model
             return p;
         }
 
-        public unsafe Bitmap BytePointerToImageSource(byte* bytePointer,int width, int height, int bytePerPixel)
+        public unsafe Bitmap BytePointerToImageSource(byte* bytePointer, int width, int height, int bytePerPixel)
         {
-            Bitmap newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed); 
+            Bitmap newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
 
             if (bytePerPixel == 4)
             {
@@ -142,7 +142,7 @@ namespace VideoProcess.Model
                     }
                     else if (bytePerPixel == 1) // 8bpp (팔레트 인덱스)
                     {
-                        bmpPtr[y * width + x] = *pixel;  
+                        bmpPtr[y * width + x] = *pixel;
                     }
                 }
             }

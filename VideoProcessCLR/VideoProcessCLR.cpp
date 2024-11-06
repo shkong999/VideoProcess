@@ -6,6 +6,104 @@
 #include<algorithm>
 
 
+// 팽창
+byte* VideoProcessCLR::VideoProcessCLR::Expansion(byte* pBitmap, int width, int height, int bytesPerPixel)
+{
+	byte* resultBitmap = new byte[width * height * bytesPerPixel];
+	int kernel[3][3] =
+	{
+		{ 1, 1, 1 },
+		{ 1, 1, 1 },
+		{ 1, 1, 1 }
+	};
+
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			byte maxValue = 0;
+
+			for (int kernelY = -1; kernelY <= 1; kernelY++)
+			{
+				for (int kernelX = -1; kernelX <= 1; kernelX++)
+				{
+					int newX = x + kernelX;
+					int newY = y + kernelY;
+
+					// 경계 체크
+					if (newX >= 0 && newX < width && newY >= 0 && newY < height)
+					{
+						int pixelIndex = newY * width * bytesPerPixel + newX * bytesPerPixel;
+						byte pixelValue = pBitmap[pixelIndex];
+						if (pixelValue > maxValue)
+						{
+							maxValue = pixelValue;
+						}
+					}
+				}
+			}
+			int outputIndex = y * width * bytesPerPixel + x * bytesPerPixel;
+			resultBitmap[outputIndex] = maxValue;
+			if (bytesPerPixel == 4)
+			{
+				resultBitmap[outputIndex + 1] = maxValue;
+				resultBitmap[outputIndex + 2] = maxValue;
+				resultBitmap[outputIndex + 3] = 255;
+			}
+		}
+	}
+	return resultBitmap;
+}
+
+// 수축
+byte* VideoProcessCLR::VideoProcessCLR::Shrinkage(byte* pBitmap, int width, int height, int bytesPerPixel)
+{
+	byte* resultBitmap = new byte[width * height * bytesPerPixel];
+	int kernel[3][3] =
+	{
+		{ 1, 1, 1 },
+		{ 1, 1, 1 },
+		{ 1, 1, 1 }
+	};
+
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			byte minValue = 255;
+
+			for (int kernelY = -1; kernelY <= 1; kernelY++)
+			{
+				for (int kernelX = -1; kernelX <= 1; kernelX++)
+				{
+					int newX = x + kernelX;
+					int newY = y + kernelY;
+
+					// 경계 체크
+					if (newX >= 0 && newX < width && newY >= 0 && newY < height)
+					{
+						int pixelIndex = newY * width * bytesPerPixel + newX * bytesPerPixel;
+						byte pixelValue = pBitmap[pixelIndex];
+						if (pixelValue < minValue)
+						{
+							minValue = pixelValue;
+						}
+					}
+				}
+			}
+			int outputIndex = y * width * bytesPerPixel + x * bytesPerPixel;
+			resultBitmap[outputIndex] = minValue;
+			if (bytesPerPixel == 4)
+			{
+				resultBitmap[outputIndex + 1] = minValue;
+				resultBitmap[outputIndex + 2] = minValue;
+				resultBitmap[outputIndex + 3] = 255;
+			}
+		}
+	}
+	return resultBitmap;
+}
+
 // 히스토그램 평활화
 byte* VideoProcessCLR::VideoProcessCLR::Smoothing(byte* pBitmap, int width, int height, int bytePerPixel)
 {
@@ -123,6 +221,7 @@ byte* VideoProcessCLR::VideoProcessCLR::Binization(byte* pBitmap, int width, int
 	return pBitmap;
 }
 
+// 가우시안 필터
 byte* VideoProcessCLR::VideoProcessCLR::Gaussion(byte* pBitmap, int width, int height, int bytesPerPixel)
 {
 	double sigma = 5;
@@ -194,3 +293,98 @@ byte* VideoProcessCLR::VideoProcessCLR::Gaussion(byte* pBitmap, int width, int h
 
 	return pBitmap;
 }
+
+byte* VideoProcessCLR::VideoProcessCLR::Laplace(byte* pBitmap, int width, int height, int bytesPerPixel)
+{
+	byte* resultBitmap = new byte[width * height * bytesPerPixel];
+	for (int i = 0; i < width * height * bytesPerPixel; i++)
+	{
+		resultBitmap[i] = static_cast<byte>(i % 256);
+ 	}
+
+	int kernel[3][3] =
+	{
+		{ -1, -1, -1 },
+		{ -1, 8, -1 },
+		{ -1, -1, -1 }
+	};
+	/*{
+		{0, -1, 0},
+		{-1, 4, -1},
+		{0, -1, 0}
+	};*/
+
+
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			double value = 0;
+
+			for (int kernelY = -1; kernelY <= 1; kernelY++)
+			{
+				for (int kernelX = -1; kernelX <= 1; kernelX++)
+				{
+					int newX = x + kernelX;
+					int newY = y + kernelY;
+
+					// 경계 체크
+					if (newX >= 0 && newX < width && newY >= 0 && newY < height)
+					{
+						int pixelIndex = newY * width * bytesPerPixel + newX * bytesPerPixel;
+						byte pixelValue = pBitmap[pixelIndex];
+
+						double kernelValue = kernel[kernelX + 1][kernelY + 1];
+						value += kernelValue * pixelValue;
+					}
+				}
+			}
+			value = std::min(255.0, std::max(0.0, value));
+
+			int outputIndex = y * width * bytesPerPixel + x * bytesPerPixel;
+			resultBitmap[outputIndex] = static_cast<byte>(value);
+			if (bytesPerPixel == 4)
+			{
+				resultBitmap[outputIndex + 1] = static_cast<byte>(value);
+				resultBitmap[outputIndex + 2] = static_cast<byte>(value);
+				resultBitmap[outputIndex + 3] = 255;
+			}
+		}
+	}
+	return resultBitmap;
+}
+
+System::Drawing::Point VideoProcessCLR::VideoProcessCLR::Matching(byte* originalBitmap, int originalWidth, int originalHeight, int originalBytePerPixel, byte* templateBitmap, int templateWidth, int templateHeight, int templateBytePerPixel)
+{
+	std::vector<std::vector<int>> kernel(originalWidth, std::vector<int>(originalHeight));
+	std::pair<int, int> bestMatchLocation(0, 0);
+
+	long long bestMatchValue = std::numeric_limits<long long>::max();
+	for (int y = 0; y <= originalHeight - templateHeight; y++)
+	{
+		for (int x = 0; x <= originalWidth - templateWidth; x++)
+		{
+			long matchValue = 0;
+			
+			for (int kernelY = 0; kernelY < templateHeight; kernelY++)
+			{
+				for (int kernelX = 0; kernelX < templateWidth; kernelX++)
+				{
+					int originalIndex = ((y + kernelY) * originalWidth + (x + kernelX)) * originalBytePerPixel;
+					int templateIndex = (kernelY * templateWidth + kernelX) * templateBytePerPixel;
+
+					matchValue += std::abs(originalBitmap[originalIndex] - templateBitmap[templateIndex]);
+				}
+			}
+
+			if (matchValue < bestMatchValue)
+			{
+				bestMatchValue = matchValue;
+				bestMatchLocation = std::pair<int, int>(x, y);
+			}
+		}
+	}
+	return System::Drawing::Point(bestMatchLocation.first, bestMatchLocation.second);
+}
+
+
