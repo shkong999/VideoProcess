@@ -80,12 +80,7 @@ namespace VideoProcess.Model
         {
             int width = bitmap.Width;
             int height = bitmap.Height;
-            Bitmap newBitmap;
-            BitmapData bmpData;
             int bytesPerPixel = 0;
-
-            (newBitmap, bmpData, bytesPerPixel) = CreateNewBitmap(bitmap, width, height);
-            /*int bytesPerPixel = 0;
             if (bitmap.PixelFormat == PixelFormat.Format32bppRgb || bitmap.PixelFormat == PixelFormat.Format32bppArgb)
             {
                 bytesPerPixel = 4;
@@ -113,7 +108,7 @@ namespace VideoProcess.Model
                 newBitmap.Palette = palette;
             }
 
-            BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);*/
+            BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);
             byte* pNewBitmap = (byte*)bmpData.Scan0.ToPointer();
 
             // 구조 요소 (3x3 커널)
@@ -124,43 +119,6 @@ namespace VideoProcess.Model
             { 1, 1, 1 }
             };
 
-            /*Parallel.For(0, width, x =>
-            {
-                Parallel.For(0, height, y =>
-                {
-                    // 최대값 저장
-                    byte maxValue = 0;
-
-                    // kernel size > 3x3
-                    for (int kernelX = -1; kernelX <= 1; kernelX++)
-                    {
-                        for (int kernelY = -1; kernelY <= 1; kernelY++)
-                        {
-                            int newX = x + kernelX;
-                            int newY = y + kernelY;
-
-                            // 경계 체크
-                            if (newX >= 0 && newX < width && newY >= 0 && newY < height)
-                            {
-                                int pixelIndex = newY * width * bytesPerPixel + newX * bytesPerPixel;
-                                byte pixelValue = pBitmap[pixelIndex];
-                                if (pixelValue > maxValue)
-                                {
-                                    maxValue = pixelValue;
-                                }
-                            }
-                        }
-                    }
-                    int outputIndex = y * width * bytesPerPixel + x * bytesPerPixel;
-                    pNewBitmap[outputIndex] = maxValue;
-                    if (bytesPerPixel == 4)
-                    {
-                        pNewBitmap[outputIndex + 1] = maxValue;
-                        pNewBitmap[outputIndex + 2] = maxValue;
-                        pNewBitmap[outputIndex + 3] = 255;
-                    }
-                });
-            });*/
             for (int y = 0; y < height; y++)
             {
                 for (int x = 0; x < width; x++)
@@ -210,13 +168,7 @@ namespace VideoProcess.Model
         {
             int width = bitmap.Width;
             int height = bitmap.Height;
-            Bitmap newBitmap;
-            BitmapData bmpData;
             int bytesPerPixel = 0;
-
-            (newBitmap, bmpData, bytesPerPixel) = CreateNewBitmap(bitmap, width, height);
-
-            /*int bytesPerPixel = 0;
             if (bitmap.PixelFormat == PixelFormat.Format32bppRgb || bitmap.PixelFormat == PixelFormat.Format32bppArgb)
             {
                 bytesPerPixel = 4;
@@ -244,7 +196,7 @@ namespace VideoProcess.Model
                 newBitmap.Palette = palette;
             }
 
-            BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);*/
+            BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);
             byte* pNewBitmap = (byte*)bmpData.Scan0.ToPointer();
 
             // 구조 요소 (3x3 커널)
@@ -254,44 +206,6 @@ namespace VideoProcess.Model
             { 1, 1, 1 },
             { 1, 1, 1 }
             };
-
-            /*Parallel.For(0, width, x =>
-            {
-                Parallel.For(0, height, y =>
-                {
-                    // 최소값 저장
-                    byte minValue = 255;
-
-                    // kernel size > 3x3
-                    for (int kernelX = -1; kernelX <= 1; kernelX++)
-                    {
-                        for (int kernelY = -1; kernelY <= 1; kernelY++)
-                        {
-                            int newX = x + kernelX;
-                            int newY = y + kernelY;
-
-                            // 경계 체크
-                            if (newX >= 0 && newX < width && newY >= 0 && newY < height)
-                            {
-                                int pixelIndex = newY * width * bytesPerPixel + newX * bytesPerPixel;
-                                byte pixelValue = pBitmap[pixelIndex];
-                                if (pixelValue < minValue)
-                                {
-                                    minValue = pixelValue;
-                                }
-                            }
-                        }
-                    }
-                    int outputIndex = y * width * bytesPerPixel + x * bytesPerPixel;
-                    pNewBitmap[outputIndex] = minValue;
-                    if (bytesPerPixel == 4)
-                    {
-                        pNewBitmap[outputIndex + 1] = minValue;
-                        pNewBitmap[outputIndex + 2] = minValue;
-                        pNewBitmap[outputIndex + 3] = 255;
-                    }
-                });
-            });*/
 
             for (int x = 0; x < width; x++)
             {
@@ -337,27 +251,14 @@ namespace VideoProcess.Model
 
         /* 히스토그램 평활화
          *  이미지의 히스토그램 생성 > 누적 분포 히스토그램 계산 > 누적 값을 정규화 > 이미지 생성
-         * 
          */
         public unsafe Bitmap Smoothing(byte* pBitmap, Bitmap bitmap)
         {
-            /*Bitmap returnBitmap = Class1.Smoothing(pBitmap, bitmap);
-            return returnBitmap;*/
-
-
-
-            //object p = Class1.Add(1, 2);
             int width = bitmap.Width;
             int height = bitmap.Height;
             double[] histogram = new double[256];
             double[] cdfHistogram = new double[256];
             int[] equalHistogram = new int[256];
-
-            /*Bitmap newBitmap;
-            BitmapData bmpData;
-            int bytesPerPixel = 0;
-
-            (newBitmap, bmpData, bytesPerPixel) = CreateNewBitmap(bitmap, width, height);*/
 
             int bytesPerPixel = 0;
             if (bitmap.PixelFormat == PixelFormat.Format32bppRgb)
@@ -436,17 +337,6 @@ namespace VideoProcess.Model
                 }
             }
 
-            // 히스토그램 확률, 누적 히스토그램 계산
-            /*int totalPixel = bitmap.Width * bitmap.Height;
-            for (int i = 0; i < histogram.Length; i++)
-            {
-                histogram[i] = histogram[i] / totalPixel;
-                if (i > 0)
-                {
-                    cdfHistogram[i] = cdfHistogram[i - 1] + histogram[i];
-                }
-            }*/
-
             // 히스토그램의 확률 계산
             int totalPixel = bitmap.Width * bitmap.Height;
             for (int i = 0; i < histogram.Length; i++)
@@ -518,8 +408,6 @@ namespace VideoProcess.Model
          */
         public unsafe Bitmap Binarization(byte* pBitmap, Bitmap bitmap)
         {
-           /* Bitmap returnBitmap = Class1.(pBitmap, bitmap);
-            return returnBitmap;*/
             int width = bitmap.Width;
             int height = bitmap.Height;
             int[] histogram = new int[256];
@@ -566,16 +454,6 @@ namespace VideoProcess.Model
                     {
                         gray = (byte)pixel[0];
                     }
-
-                   /* // 새로운 비트맵에 픽셀 설정
-                    pNewBitmap[(y * width + x) * bytesPerPixel + 0] = gray;
-                    if (bytesPerPixel == 4)
-                    {
-                        pNewBitmap[(y * width + x) * bytesPerPixel + 1] = gray; // Green
-                        pNewBitmap[(y * width + x) * bytesPerPixel + 2] = gray; // Red
-                        pNewBitmap[(y * width + x) * bytesPerPixel + 3] = 255; // Alpha
-                    }*/
-
                     histogram[gray]++;
                 }
             }
@@ -665,13 +543,9 @@ namespace VideoProcess.Model
         {
             int width = bitmap.Width;
             int height = bitmap.Height;
-            Bitmap newBitmap;
-            BitmapData bmpData;
             int bytesPerPixel = 0;
 
-            (newBitmap, bmpData, bytesPerPixel) = CreateNewBitmap(bitmap, width, height);
-
-            /*if (bitmap.PixelFormat == PixelFormat.Format32bppRgb || bitmap.PixelFormat == PixelFormat.Format32bppArgb)
+            if (bitmap.PixelFormat == PixelFormat.Format32bppRgb || bitmap.PixelFormat == PixelFormat.Format32bppArgb)
             {
                 bytesPerPixel = 4;
             }
@@ -698,7 +572,7 @@ namespace VideoProcess.Model
                 newBitmap.Palette = palette;
             }
 
-            BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);*/
+            BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);
             byte* pNewBitmap = (byte*)bmpData.Scan0.ToPointer();
 
             int[] histogram = new int[256];
@@ -820,13 +694,8 @@ namespace VideoProcess.Model
         {
             int width = bitmap.Width;
             int height = bitmap.Height;
-            Bitmap newBitmap;
-            BitmapData bmpData;
             int bytesPerPixel = 0;
 
-            (newBitmap, bmpData, bytesPerPixel) = CreateNewBitmap(bitmap, width, height);
-
-            /*int bytesPerPixel = 0;
             if (bitmap.PixelFormat == PixelFormat.Format32bppRgb || bitmap.PixelFormat == PixelFormat.Format32bppArgb)
             {
                 bytesPerPixel = 4;
@@ -854,7 +723,7 @@ namespace VideoProcess.Model
                 newBitmap.Palette = palette;
             }
 
-            BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);*/
+            BitmapData bmpData = newBitmap.LockBits(new Rectangle(0, 0, newBitmap.Width, newBitmap.Height), ImageLockMode.WriteOnly, newBitmap.PixelFormat);
             byte* pNewBitmap = (byte*)bmpData.Scan0.ToPointer();
 
             // 라플라시안 커널 (3x3)

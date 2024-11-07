@@ -354,7 +354,8 @@ byte* VideoProcessCLR::VideoProcessCLR::Laplace(byte* pBitmap, int width, int he
 	return resultBitmap;
 }
 
-System::Drawing::Point VideoProcessCLR::VideoProcessCLR::Matching(byte* originalBitmap, int originalWidth, int originalHeight, int originalBytePerPixel, byte* templateBitmap, int templateWidth, int templateHeight, int templateBytePerPixel)
+System::Drawing::Point VideoProcessCLR::VideoProcessCLR::Matching(byte* originalBitmap, int originalWidth, int originalHeight, int originalBytePerPixel, 
+	byte* templateBitmap, int templateWidth, int templateHeight, int templateBytePerPixel)
 {
 	std::vector<std::vector<int>> kernel(originalWidth, std::vector<int>(originalHeight));
 	std::pair<int, int> bestMatchLocation(0, 0);

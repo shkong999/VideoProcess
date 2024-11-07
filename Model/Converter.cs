@@ -98,12 +98,12 @@ namespace VideoProcess.Model
             {
                 p = (byte*)bitmapData.Scan0; // 비트맵의 첫 번째 픽셀 주소
             }
-            /*bitmap.UnlockBits(bitmapData);*/
+            bitmap.UnlockBits(bitmapData);
 
             return p;
         }
 
-        public unsafe Bitmap BytePointerToImageSource(byte* bytePointer, int width, int height, int bytePerPixel)
+        public unsafe Bitmap BytePointerToBitmap(byte* bytePointer, int width, int height, int bytePerPixel)
         {
             Bitmap newBitmap = new Bitmap(width, height, System.Drawing.Imaging.PixelFormat.Format8bppIndexed);
 
@@ -148,6 +148,20 @@ namespace VideoProcess.Model
             }
             newBitmap.UnlockBits(bmpData);
             return newBitmap;
+        }
+
+        public Bitmap ConvertTo32bppArgb(Bitmap bitmap)
+        {
+            Bitmap converterBitmap = new Bitmap(bitmap.Width, bitmap.Height, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+            // 그래픽 객체 생성
+            using (Graphics g = Graphics.FromImage(converterBitmap))
+            {
+                // 원본 이미지를 새로운 비트맵에 그려넣기
+                g.DrawImage(bitmap, 0, 0, bitmap.Width, bitmap.Height);
+            }
+
+            return converterBitmap;
         }
     }
 }
